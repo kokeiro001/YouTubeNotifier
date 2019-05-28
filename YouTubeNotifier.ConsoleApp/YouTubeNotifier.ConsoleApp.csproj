@@ -9,4 +9,10 @@
     <PackageReference Include="Google.Apis.YouTube.v3" Version="1.40.0.1593" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="youtubenotifier_client_id.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>
