@@ -2,6 +2,7 @@
 using Google.Apis.Services;
 using Google.Apis.Util.Store;
 using Google.Apis.YouTube.v3;
+using Google.Apis.YouTube.v3.Data;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -61,29 +62,62 @@ namespace YouTubeNotifier.ConsoleApp
             CreateYoutubeService();
 
             var targetYouTubeChannelIds = await GetSubscriptionYouTubeChannels();
-
-            var fromUtc = DateTime.UtcNow.AddDays(-7);
+            
+            var fromUtc = DateTime.UtcNow.AddDays(-1);
 
             var movieIds = new List<string>();
-            foreach (var (youtubeChannelId, title) in targetYouTubeChannelIds)
+            foreach (var channelInfo in targetYouTubeChannelIds)
             {
-                var channelMovieIds = await GetUploadedMovies(youtubeChannelId, fromUtc);
-                channelMovieIds.AddRange(channelMovieIds);
-                break;
+                var channelMovieIds = await GetUploadedMovies(channelInfo.Id, fromUtc);
+                movieIds.AddRange(channelMovieIds);
             }
 
-            // TODO: create today playlist
+            // create today playlist
+            var japanNow = DateTime.UtcNow.AddHours(9);
+            var insertPlaylistRequest = youTubeService.Playlists.Insert(new Playlist
+            {
+                Snippet = new PlaylistSnippet
+                {
+                    Title = japanNow.ToString("yyyy年M月dd日 H時m分s秒"),
+                },
+                Status = new PlaylistStatus
+                {
+                    PrivacyStatus = "private",
+                },
+            },"snippet,status");
 
-            // TODO: add new movies to playlist
+            var insertPlaylistResponse = await insertPlaylistRequest.ExecuteAsync();
+
+            // insert movies
+            foreach (var movieId in movieIds)
+            {
+                var insertPlaylistItemRequest = youTubeService.PlaylistItems.Insert(new PlaylistItem
+                {
+                    Snippet = new PlaylistItemSnippet
+                    {
+                        PlaylistId = insertPlaylistResponse.Id,
+                        ResourceId = new ResourceId
+                        {
+                            Kind = "youtube#video",
+                            VideoId = movieId,
+                        }
+                    },
+                }, "snippet");
+                await insertPlaylistItemRequest.ExecuteAsync();
+            }
         }
 
-        private async Task<List<(string id, string channelTitle)>> GetSubscriptionYouTubeChannels()
+        private async Task<List<ChannelInfo>> GetSubscriptionYouTubeChannels()
         {
-            var list = new List<(string id, string channelTitle)>();
+            // TODO: DBとかにキャッシュしておけば平和になる
+
+            var list = new List<ChannelInfo>();
             var pageToken = default(string);
+
             do
             {
                 var subscriptionsListRequest = youTubeService.Subscriptions.List("snippet");
+                subscriptionsListRequest.Fields = "nextPageToken,items/snippet/title,items/snippet/resourceId/channelId";
                 subscriptionsListRequest.Mine = true;
                 subscriptionsListRequest.MaxResults = 5;
                 subscriptionsListRequest.PageToken = pageToken;
@@ -93,11 +127,14 @@ namespace YouTubeNotifier.ConsoleApp
                 foreach (var subscription in subscriptionList.Items)
                 {
                     Console.WriteLine(subscription.Snippet.Title);
-                    list.Add((subscription.Snippet.ResourceId.ChannelId, subscription.Snippet.Title));
+                    list.Add(new ChannelInfo
+                    {
+                        Id = subscription.Snippet.ResourceId.ChannelId,
+                        Title = subscription.Snippet.Title,
+                    });
                 }
 
                 pageToken = subscriptionList.NextPageToken;
-                break;
             }
             while (!string.IsNullOrEmpty(pageToken));
 
@@ -111,11 +148,19 @@ namespace YouTubeNotifier.ConsoleApp
             var searchRequest = youTubeService.Search.List("snippet");
             searchRequest.ChannelId = channelId;
             searchRequest.Order = SearchResource.ListRequest.OrderEnum.Date;
+            searchRequest.MaxResults = 5;
             var data = await searchRequest.ExecuteAsync();
 
+            // TODO: loop if all movie added.
             foreach (var item in data.Items)
             {
-                var publishedAt = DateTime.Parse(item.Snippet.PublishedAtRaw, null, System.Globalization.DateTimeStyles.RoundtripKind);
+                if (item.Id.Kind != "youtube#video")
+                {
+                    continue;
+                }
+
+                var publishedAt = DateTime.Parse(item.Snippet.PublishedAtRaw, null, DateTimeStyles.RoundtripKind);
+                
                 if (publishedAt >= from)
                 {
                     list.Add(item.Id.VideoId);
@@ -125,5 +170,10 @@ namespace YouTubeNotifier.ConsoleApp
             return list;
         }
 
+        private class ChannelInfo
+        {
+            public string Id { get; set; }
+            public string Title { get; set; }
+        }
     }
 }
