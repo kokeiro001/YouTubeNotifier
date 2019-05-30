@@ -61,7 +61,13 @@ namespace YouTubeNotifier.ConsoleApp
         {
             CreateYoutubeService();
 
-            var targetYouTubeChannelIds = await GetSubscriptionYouTubeChannels();
+            var japanNow = DateTime.UtcNow.AddHours(9);
+
+            var targetYouTubeChannelIds = await Util.Cache(async () =>
+            {
+                return await GetSubscriptionYouTubeChannels();
+            },
+            japanNow.ToString("yyyyMMdd"));
             
             var fromUtc = DateTime.UtcNow.AddDays(-1);
 
@@ -70,10 +76,15 @@ namespace YouTubeNotifier.ConsoleApp
             {
                 var channelMovieIds = await GetUploadedMovies(channelInfo.Id, fromUtc);
                 movieIds.AddRange(channelMovieIds);
+
+                if (movieIds.Count > 0)
+                {
+                    break;
+                }
             }
 
             // create today playlist
-            var japanNow = DateTime.UtcNow.AddHours(9);
+
             var insertPlaylistRequest = youTubeService.Playlists.Insert(new Playlist
             {
                 Snippet = new PlaylistSnippet
@@ -84,7 +95,9 @@ namespace YouTubeNotifier.ConsoleApp
                 {
                     PrivacyStatus = "private",
                 },
-            },"snippet,status");
+            }, "snippet,status");
+
+            insertPlaylistRequest.Fields = "id";
 
             var insertPlaylistResponse = await insertPlaylistRequest.ExecuteAsync();
 
@@ -103,14 +116,15 @@ namespace YouTubeNotifier.ConsoleApp
                         }
                     },
                 }, "snippet");
+
+                insertPlaylistItemRequest.Fields = "";
+
                 await insertPlaylistItemRequest.ExecuteAsync();
             }
         }
 
         private async Task<List<ChannelInfo>> GetSubscriptionYouTubeChannels()
         {
-            // TODO: DBとかにキャッシュしておけば平和になる
-
             var list = new List<ChannelInfo>();
             var pageToken = default(string);
 
@@ -145,32 +159,38 @@ namespace YouTubeNotifier.ConsoleApp
         {
             var list = new List<string>();
 
-            var searchRequest = youTubeService.Search.List("snippet");
-            searchRequest.ChannelId = channelId;
-            searchRequest.Order = SearchResource.ListRequest.OrderEnum.Date;
-            searchRequest.MaxResults = 5;
-            var data = await searchRequest.ExecuteAsync();
+            var pageToken = default(string);
 
-            // TODO: loop if all movie added.
-            foreach (var item in data.Items)
+            do
             {
-                if (item.Id.Kind != "youtube#video")
-                {
-                    continue;
-                }
+                var searchRequest = youTubeService.Search.List("id");
+                searchRequest.ChannelId = channelId;
+                searchRequest.Order = SearchResource.ListRequest.OrderEnum.Date;
+                searchRequest.MaxResults = 5;
+                searchRequest.Fields = "nextPageToken,items/id/kind,items/id/videoId";
+                searchRequest.PublishedAfter = from;
+                searchRequest.Type = "video";
 
-                var publishedAt = DateTime.Parse(item.Snippet.PublishedAtRaw, null, DateTimeStyles.RoundtripKind);
-                
-                if (publishedAt >= from)
+                var searchResponse = await searchRequest.ExecuteAsync();
+
+                foreach (var item in searchResponse.Items)
                 {
+                    if (item.Id.Kind != "youtube#video")
+                    {
+                        continue;
+                    }
+
                     list.Add(item.Id.VideoId);
                 }
+
+                pageToken = searchResponse.NextPageToken;
             }
+            while (!string.IsNullOrEmpty(pageToken));
 
             return list;
         }
 
-        private class ChannelInfo
+        public class ChannelInfo
         {
             public string Id { get; set; }
             public string Title { get; set; }
