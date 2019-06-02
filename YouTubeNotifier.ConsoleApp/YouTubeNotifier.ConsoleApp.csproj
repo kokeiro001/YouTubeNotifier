@@ -11,6 +11,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\YouTubeNotifier.Common\YouTubeNotifier.Common.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Update="youtubenotifier_client_id.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

@@ -2,7 +2,7 @@
 using Microsoft.WindowsAzure.Storage.Table;
 using System.Threading.Tasks;
 
-namespace YouTubeNotifier.ConsoleApp
+namespace YouTubeNotifier.Common
 {
     public class TableStorageSecretStore
     {
