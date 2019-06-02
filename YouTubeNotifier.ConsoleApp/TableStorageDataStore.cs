@@ -6,7 +6,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace YouTubeNotifier.ConsoleApp
@@ -23,14 +22,14 @@ namespace YouTubeNotifier.ConsoleApp
         public const string TABLE_NAME = "GoogleDataStore";
         public const string PARTITION_NAME = "OAuth2Responses";
 
-        public TableStorageDataStore()
+        public TableStorageDataStore(string cloudStorageAccountConnectionString)
         {
             // Get TableStorage Connection String
-            CloudStorageAccount storageAccount = CloudStorageAccount.Parse(ConfigurationManager.ConnectionStrings["StorageConnectionString"].ConnectionString);
+            CloudStorageAccount storageAccount = CloudStorageAccount.Parse(cloudStorageAccountConnectionString);
 
             var tableClient = storageAccount.CreateCloudTableClient();
             _table = tableClient.GetTableReference(TABLE_NAME);
-            _table.CreateIfNotExists();
+            _table.CreateIfNotExistsAsync().Wait();
         }
 
         public async Task ClearAsync()
@@ -39,7 +38,8 @@ namespace YouTubeNotifier.ConsoleApp
             // https://docs.microsoft.com/en-us/dotnet/api/microsoft.windowsazure.storage.table.tablebatchoperation?view=azure-dotnet
 
             TableQuery<DataStoreItem> query = new TableQuery<DataStoreItem>();
-            IList<DataStoreItem> items = _table.ExecuteQuery(query).ToList();
+            var tableContinuationToken = new TableContinuationToken();
+            var items = await _table.ExecuteQuerySegmentedAsync(query, tableContinuationToken);
 
             int chunkSize = 99;
 
