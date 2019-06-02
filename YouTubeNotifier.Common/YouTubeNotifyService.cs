@@ -6,6 +6,7 @@ using Google.Apis.YouTube.v3.Data;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -60,9 +61,13 @@ namespace YouTubeNotifier.Common
         {
             await CreateYoutubeService();
 
-            var japanNow = DateTime.UtcNow.AddHours(9);
 
-            var targetYouTubeChannelIds = default(List<ChannelInfo>);
+            var fromDateTimeJst = config.FromDateTimeUtc.AddHours(9);
+
+            // create today playlist
+            var insertPlaylistResponse = await GetOrInsertPlaylist(fromDateTimeJst);
+
+            var targetYouTubeChannelIds = default(List<Subscription>);
 
             if (config.UseCache)
             {
@@ -70,41 +75,22 @@ namespace YouTubeNotifier.Common
                 {
                     return await GetSubscriptionYouTubeChannels();
                 },
-                japanNow.ToString("yyyyMMdd"));
+                fromDateTimeJst.ToString("yyyyMMdd"));
             }
             else
             {
                 targetYouTubeChannelIds = await GetSubscriptionYouTubeChannels();
             }
 
-            var fromUtc = DateTime.UtcNow.AddDays(-1);
+            var fromUtc = config.FromDateTimeUtc;
+            var toUtc = config.ToDateTimeUtc;
 
             var movieIds = new List<string>();
             foreach (var channelInfo in targetYouTubeChannelIds)
             {
-                var channelMovieIds = await GetUploadedMovies(channelInfo.Id, fromUtc);
+                var channelMovieIds = await GetUploadedMovies(channelInfo.Id, fromUtc, toUtc);
                 movieIds.AddRange(channelMovieIds);
             }
-
-            // TODO: get playlist, if exists, use it .
-
-            // create today playlist
-            var insertPlaylistRequest = youTubeService.Playlists.Insert(new Playlist
-            {
-                Snippet = new PlaylistSnippet
-                {
-                    //Title = japanNow.ToString("yyyy年M月dd日 H時m分s秒"),
-                    Title = japanNow.ToString("yyyy年M月dd日"),
-                },
-                Status = new PlaylistStatus
-                {
-                    PrivacyStatus = "private",
-                },
-            }, "snippet,status");
-
-            insertPlaylistRequest.Fields = "id";
-
-            var insertPlaylistResponse = await insertPlaylistRequest.ExecuteAsync();
 
             // insert movies
             foreach (var movieId in movieIds)
@@ -128,29 +114,88 @@ namespace YouTubeNotifier.Common
             }
         }
 
-        private async Task<List<ChannelInfo>> GetSubscriptionYouTubeChannels()
+        private async Task<Playlist> GetOrInsertPlaylist(DateTime fromDateTimeJst)
         {
-            var list = new List<ChannelInfo>();
+            var pageToken = default(string);
+
+            var playlistTitle = fromDateTimeJst.ToString("yyyy年M月dd日");
+
+            var page = 0;
+            var maxPage = 3;
+
+            do
+            {
+                var listPlaylistRequest = youTubeService.Playlists.List("id,snippet");
+                listPlaylistRequest.Mine = true;
+                listPlaylistRequest.MaxResults = 5;
+                listPlaylistRequest.PageToken = pageToken;
+                listPlaylistRequest.Fields = "nextPageToken,items/id,items/snippet/title";
+
+                var listPlaylistResponse = await listPlaylistRequest.ExecuteAsync();
+
+                var playlist = listPlaylistResponse.Items
+                    .Where(x => x.Snippet.Title == playlistTitle)
+                    .FirstOrDefault();
+
+                if (playlist != null)
+                {
+                    return playlist;
+                }
+
+                pageToken = listPlaylistResponse.NextPageToken;
+                page++;
+
+            } while (!string.IsNullOrEmpty(pageToken) && page <= maxPage);
+
+            // not found playlist. insert playlist.
+
+            var insertPlaylistRequest = youTubeService.Playlists.Insert(new Playlist
+            {
+                Snippet = new PlaylistSnippet
+                {
+                    Title = playlistTitle,
+                },
+                Status = new PlaylistStatus
+                {
+                    PrivacyStatus = "private",
+                },
+            }, "snippet,status");
+
+            insertPlaylistRequest.Fields = "id";
+
+            var insertPlaylistResponse = await insertPlaylistRequest.ExecuteAsync();
+            return insertPlaylistResponse;
+        }
+
+        private async Task<List<Subscription>> GetSubscriptionYouTubeChannels()
+        {
+            var list = new List<Subscription>();
             var pageToken = default(string);
 
             do
             {
+                var showTitle = false;
+
                 var subscriptionsListRequest = youTubeService.Subscriptions.List("snippet");
-                subscriptionsListRequest.Fields = "nextPageToken,items/snippet/title,items/snippet/resourceId/channelId";
+                subscriptionsListRequest.Fields = "nextPageToken,items/snippet/resourceId/channelId";
                 subscriptionsListRequest.Mine = true;
                 subscriptionsListRequest.MaxResults = 5;
                 subscriptionsListRequest.PageToken = pageToken;
+
+                if (showTitle)
+                {
+                    subscriptionsListRequest.Fields += ",items/snippet/title";
+                }
 
                 var subscriptionList = await subscriptionsListRequest.ExecuteAsync();
 
                 foreach (var subscription in subscriptionList.Items)
                 {
-                    Console.WriteLine(subscription.Snippet.Title);
-                    list.Add(new ChannelInfo
+                    if (showTitle)
                     {
-                        Id = subscription.Snippet.ResourceId.ChannelId,
-                        Title = subscription.Snippet.Title,
-                    });
+                        Console.WriteLine(subscription.Snippet.Title);
+                    }
+                    list.Add(subscription);
                 }
 
                 pageToken = subscriptionList.NextPageToken;
@@ -160,7 +205,7 @@ namespace YouTubeNotifier.Common
             return list;
         }
 
-        private async Task<List<string>> GetUploadedMovies(string channelId, DateTime from)
+        private async Task<List<string>> GetUploadedMovies(string channelId, DateTime from, DateTime to)
         {
             var list = new List<string>();
 
@@ -174,6 +219,7 @@ namespace YouTubeNotifier.Common
                 searchRequest.MaxResults = 5;
                 searchRequest.Fields = "nextPageToken,items/id/kind,items/id/videoId";
                 searchRequest.PublishedAfter = from;
+                searchRequest.PublishedBefore = to;
                 searchRequest.Type = "video";
                 searchRequest.PageToken = pageToken;
 
@@ -233,12 +279,6 @@ namespace YouTubeNotifier.Common
                     dataStore
                 );
             }
-        }
-
-        public class ChannelInfo
-        {
-            public string Id { get; set; }
-            public string Title { get; set; }
         }
     }
 }

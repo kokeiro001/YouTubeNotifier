@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using YouTubeNotifier.Common;
 
 namespace YouTubeNotifier.ConsoleApp
@@ -7,8 +8,13 @@ namespace YouTubeNotifier.ConsoleApp
     {
         static async Task Main()
         {
+            var fromUtc = DateTime.UtcNow.AddHours(9).Date.AddDays(-1).AddHours(-9);
+            var toUtc = fromUtc.AddDays(1).AddSeconds(-1);
+
             var config = new YouTubeNotifyServiceConfig
             {
+                FromDateTimeUtc = fromUtc,
+                ToDateTimeUtc = toUtc,
                 UseCache = true,
                 StorageType = StorageType.LocalStorage,
                 LocalStorageConfig = new LocalStorageConfig

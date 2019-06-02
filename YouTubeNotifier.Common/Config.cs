@@ -10,9 +10,9 @@ namespace YouTubeNotifier.Common
 
     public class YouTubeNotifyServiceConfig
     {
-        public DateTime FromDateTime { get; set; }
+        public DateTime FromDateTimeUtc { get; set; }
 
-        public DateTime ToDateTime { get; set; }
+        public DateTime ToDateTimeUtc { get; set; }
 
         public bool UseCache { get; set; }
 
