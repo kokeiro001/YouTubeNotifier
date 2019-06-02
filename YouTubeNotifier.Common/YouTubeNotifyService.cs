@@ -16,19 +16,38 @@ namespace YouTubeNotifier.Common
     {
         private static readonly string[] Scopes = { YouTubeService.Scope.Youtube };
         private static readonly string ApplicationName = "YouTubeNotifier";
-        private static readonly string ClientSecretFilePath = @"youtubenotifier_client_id.json";
+
+        private readonly YouTubeNotifyServiceConfig config;
 
         private YouTubeService youTubeService;
+
+        public YouTubeNotifyService(YouTubeNotifyServiceConfig config)
+        {
+            this.config = config;
+        }
 
         private async Task CreateYoutubeService()
         {
             if (youTubeService != null)
             {
-                return;
+                throw new Exception($"already created {nameof(youTubeService)}");
             }
 
-            var credential = await GetCredentialByTableStoraeg();
-            //var credential = await GetCredentialByLocalFile();
+
+            var credential = default(UserCredential);
+
+            if (config.StorageType == StorageType.LocalStorage)
+            {
+                credential = await GetCredentialByLocalFile();
+            }
+            else if(config.StorageType == StorageType.AzureTableStorage)
+            {
+                credential = await GetCredentialByTableStoraeg();
+            }
+            else
+            {
+                throw new Exception($"unexpedted type config.StorageType={config.StorageType}");
+            }
 
             youTubeService = new YouTubeService(new BaseClientService.Initializer()
             {
@@ -43,11 +62,20 @@ namespace YouTubeNotifier.Common
 
             var japanNow = DateTime.UtcNow.AddHours(9);
 
-            var targetYouTubeChannelIds = await Util.Cache(async () =>
+            var targetYouTubeChannelIds = default(List<ChannelInfo>);
+
+            if (config.UseCache)
             {
-                return await GetSubscriptionYouTubeChannels();
-            },
-            japanNow.ToString("yyyyMMdd"));
+                targetYouTubeChannelIds = await Util.Cache(async () =>
+                {
+                    return await GetSubscriptionYouTubeChannels();
+                },
+                japanNow.ToString("yyyyMMdd"));
+            }
+            else
+            {
+                targetYouTubeChannelIds = await GetSubscriptionYouTubeChannels();
+            }
 
             var fromUtc = DateTime.UtcNow.AddDays(-1);
 
@@ -58,12 +86,15 @@ namespace YouTubeNotifier.Common
                 movieIds.AddRange(channelMovieIds);
             }
 
+            // TODO: get playlist, if exists, use it .
+
             // create today playlist
             var insertPlaylistRequest = youTubeService.Playlists.Insert(new Playlist
             {
                 Snippet = new PlaylistSnippet
                 {
-                    Title = japanNow.ToString("yyyy年M月dd日 H時m分s秒"),
+                    //Title = japanNow.ToString("yyyy年M月dd日 H時m分s秒"),
+                    Title = japanNow.ToString("yyyy年M月dd日"),
                 },
                 Status = new PlaylistStatus
                 {
@@ -167,9 +198,11 @@ namespace YouTubeNotifier.Common
 
         private Task<UserCredential> GetCredentialByLocalFile()
         {
-            using (var stream = new FileStream(ClientSecretFilePath, FileMode.Open, FileAccess.Read))
+            var clientSecretFilePath = config.LocalStorageConfig.ClientSecretFilePath;
+
+            using (var stream = new FileStream(clientSecretFilePath, FileMode.Open, FileAccess.Read))
             {
-                var dataStore = new FileDataStore("Credentials", true);
+                var dataStore = new FileDataStore(config.LocalStorageConfig.CredentialsDirectory, true);
 
                 return GoogleWebAuthorizationBroker.AuthorizeAsync(
                     GoogleClientSecrets.Load(stream).Secrets,
@@ -183,7 +216,7 @@ namespace YouTubeNotifier.Common
 
         private async Task<UserCredential> GetCredentialByTableStoraeg()
         {
-            var cloudStorageAccountConnectionString = "UseDevelopmentStorage=true";
+            var cloudStorageAccountConnectionString = config.AzureTableStorageConfig.ConnectionString;
 
             var secretStore = new TableStorageSecretStore(cloudStorageAccountConnectionString);
             var secretText = await secretStore.GetSecret();
@@ -208,5 +241,4 @@ namespace YouTubeNotifier.Common
             public string Title { get; set; }
         }
     }
-
 }
