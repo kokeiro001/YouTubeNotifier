@@ -1,11 +1,10 @@
-using Google.Apis.Auth.OAuth2;
+﻿using Google.Apis.Auth.OAuth2;
 using Google.Apis.Services;
 using Google.Apis.Util.Store;
 using Google.Apis.YouTube.v3;
 using Google.Apis.YouTube.v3.Data;
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -26,7 +25,6 @@ namespace YouTubeNotifier.ConsoleApp
         private static readonly string[] Scopes = { YouTubeService.Scope.Youtube };
         private static readonly string ApplicationName = "YouTubeNotifier";
         private static readonly string ClientSecretFilePath = @"youtubenotifier_client_id.json";
-        private static readonly CultureInfo EnUsInfo = new System.Globalization.CultureInfo("en-US");
 
         private YouTubeService youTubeService;
 
@@ -76,15 +74,9 @@ namespace YouTubeNotifier.ConsoleApp
             {
                 var channelMovieIds = await GetUploadedMovies(channelInfo.Id, fromUtc);
                 movieIds.AddRange(channelMovieIds);
-
-                if (movieIds.Count > 0)
-                {
-                    break;
-                }
             }
 
             // create today playlist
-
             var insertPlaylistRequest = youTubeService.Playlists.Insert(new Playlist
             {
                 Snippet = new PlaylistSnippet
