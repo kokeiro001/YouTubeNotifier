@@ -6,6 +6,7 @@ using Google.Apis.YouTube.v3.Data;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -28,25 +29,15 @@ namespace YouTubeNotifier.ConsoleApp
 
         private YouTubeService youTubeService;
 
-        private void CreateYoutubeService()
+        private async Task CreateYoutubeService()
         {
             if (youTubeService != null)
             {
                 return;
             }
 
-            var credential = default(UserCredential);
-
-            using (var stream = new FileStream(ClientSecretFilePath, FileMode.Open, FileAccess.Read))
-            {
-                var credPath = "Credentials";
-                credential = GoogleWebAuthorizationBroker.AuthorizeAsync(
-                    GoogleClientSecrets.Load(stream).Secrets,
-                    Scopes,
-                    "user",
-                    CancellationToken.None,
-                    new FileDataStore(credPath, true)).Result;
-            }
+            var credential = await GetCredentialByTableStoraeg();
+            //var credential = await GetCredentialByLocalFile();
 
             youTubeService = new YouTubeService(new BaseClientService.Initializer()
             {
@@ -57,7 +48,7 @@ namespace YouTubeNotifier.ConsoleApp
 
         public async Task Run()
         {
-            CreateYoutubeService();
+            await CreateYoutubeService();
 
             var japanNow = DateTime.UtcNow.AddHours(9);
 
@@ -183,10 +174,72 @@ namespace YouTubeNotifier.ConsoleApp
             return list;
         }
 
+        private Task<UserCredential> GetCredentialByLocalFile()
+        {
+            using (var stream = new FileStream(ClientSecretFilePath, FileMode.Open, FileAccess.Read))
+            {
+                var dataStore = new FileDataStore("Credentials", true);
+
+                return GoogleWebAuthorizationBroker.AuthorizeAsync(
+                    GoogleClientSecrets.Load(stream).Secrets,
+                    Scopes,
+                    "user",
+                    CancellationToken.None,
+                    dataStore
+                );
+            }
+        }
+
+        private async Task<UserCredential> GetCredentialByTableStoraeg()
+        {
+            var cloudStorageAccountConnectionString = "UseDevelopmentStorage=true";
+
+            var secretStore = new TableStorageSecretStore(cloudStorageAccountConnectionString);
+            var secretText = await secretStore.GetSecret();
+
+            using (var stream = secretText.ToMemoryStream(Encoding.UTF8))
+            {
+                var dataStore = new TableStorageDataStore(cloudStorageAccountConnectionString);
+
+                return await GoogleWebAuthorizationBroker.AuthorizeAsync(
+                    GoogleClientSecrets.Load(stream).Secrets,
+                    Scopes,
+                    "user",
+                    CancellationToken.None,
+                    dataStore
+                );
+            }
+        }
+
         public class ChannelInfo
         {
             public string Id { get; set; }
             public string Title { get; set; }
+        }
+    }
+
+    public static class ConverterExtensions
+    {
+        /// <summary>
+        /// 文字エンコーディングを指定して現在の文字列を表すメモリストリームを取得します。
+        /// </summary>
+        /// <param name="text">現在の文字列</param>
+        /// <param name="encoding">文字エンコーディング</param>
+        /// <returns>メモリストリーム</returns>
+        public static MemoryStream ToMemoryStream(this string text, Encoding encoding)
+        {
+            return new MemoryStream(encoding.GetBytes(text));
+        }
+
+        /// <summary>
+        /// 文字エンコーディングを指定して現在のメモリストリームを表す文字列を取得します。
+        /// </summary>
+        /// <param name="stream">メモリストリーム</param>
+        /// <param name="encoding">文字エンコーディング</param>
+        /// <returns>文字列</returns>
+        public static string ToString(this MemoryStream stream, Encoding encoding)
+        {
+            return encoding.GetString(stream.ToArray());
         }
     }
 }
