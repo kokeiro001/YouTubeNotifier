@@ -1,4 +1,4 @@
-﻿using Google.Apis.Auth.OAuth2;
+using Google.Apis.Auth.OAuth2;
 using Google.Apis.Services;
 using Google.Apis.Util.Store;
 using Google.Apis.YouTube.v3;
@@ -170,6 +170,7 @@ namespace YouTubeNotifier.ConsoleApp
                 searchRequest.Fields = "nextPageToken,items/id/kind,items/id/videoId";
                 searchRequest.PublishedAfter = from;
                 searchRequest.Type = "video";
+                searchRequest.PageToken = pageToken;
 
                 var searchResponse = await searchRequest.ExecuteAsync();
 
