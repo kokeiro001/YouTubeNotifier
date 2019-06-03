@@ -28,5 +28,4 @@ namespace YouTubeNotifier.ConsoleApp
             await youtubeNotifyService.Run();
         }
     }
-
 }

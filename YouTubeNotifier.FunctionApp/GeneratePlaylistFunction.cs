@@ -16,6 +16,11 @@ namespace YouTubeNotifier.FunctionApp
         {
             log.LogInformation($"C# Timer trigger function executed at: {DateTime.UtcNow}");
 
+            await GeneratePlaylist();
+        }
+
+        public static async Task GeneratePlaylist()
+        {
             var executingPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
 
             var config = new ConfigurationBuilder()
@@ -24,9 +29,15 @@ namespace YouTubeNotifier.FunctionApp
                 .AddEnvironmentVariables()
                 .Build();
 
+            var fromUtc = DateTime.UtcNow.AddHours(9).Date.AddDays(-1).AddHours(-9);
+            var toUtc = fromUtc.AddDays(1).AddSeconds(-1);
+
             var serviceConfig = new YouTubeNotifyServiceConfig
             {
+                StorageType = StorageType.AzureTableStorage,
                 UseCache = false,
+                FromDateTimeUtc = fromUtc,
+                ToDateTimeUtc = toUtc,
                 AzureTableStorageConfig = new AzureTableStorageConfig
                 {
                     ConnectionString = config["AzureWebJobsStorage"],
