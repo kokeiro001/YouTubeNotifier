@@ -13,18 +13,29 @@ using System.Threading.Tasks;
 
 namespace YouTubeNotifier.Common
 {
+    // なんかいいnuget探してきたほうがいい
+    public interface IMyLogger
+    {
+        void Infomation(string message);
+
+        void Warning(string message);
+
+        void Error(string message);
+    }
+
     public class YouTubeNotifyService
     {
         private static readonly string[] Scopes = { YouTubeService.Scope.Youtube };
         private static readonly string ApplicationName = "YouTubeNotifier";
 
         private readonly YouTubeNotifyServiceConfig config;
-
+        private readonly IMyLogger log;
         private YouTubeService youTubeService;
 
-        public YouTubeNotifyService(YouTubeNotifyServiceConfig config)
+        public YouTubeNotifyService(YouTubeNotifyServiceConfig config, IMyLogger log)
         {
             this.config = config;
+            this.log = log;
         }
 
         private async Task CreateYoutubeService()
@@ -34,8 +45,7 @@ namespace YouTubeNotifier.Common
                 throw new Exception($"already created {nameof(youTubeService)}");
             }
 
-
-            var credential = default(UserCredential);
+            UserCredential credential;
 
             if (config.StorageType == StorageType.LocalStorage)
             {
@@ -59,12 +69,13 @@ namespace YouTubeNotifier.Common
 
         public async Task Run()
         {
+            log.Infomation("CreateYoutubeService");
             await CreateYoutubeService();
 
-
             var fromDateTimeJst = config.FromDateTimeUtc.AddHours(9);
+            log.Infomation($"fromDateTimeJst={fromDateTimeJst}");
 
-            // create today playlist
+            log.Infomation($"GetOrInsertPlaylist({fromDateTimeJst})");
             var insertPlaylistResponse = await GetOrInsertPlaylist(fromDateTimeJst);
 
             var targetYouTubeChannelIds = default(List<Subscription>);
@@ -79,7 +90,9 @@ namespace YouTubeNotifier.Common
             }
             else
             {
+                log.Infomation($"GetSubscriptionYouTubeChannels");
                 targetYouTubeChannelIds = await GetSubscriptionYouTubeChannels();
+                log.Infomation($"targetYouTubeChannelIds.Count={targetYouTubeChannelIds.Count}");
             }
 
             var fromUtc = config.FromDateTimeUtc;
@@ -88,11 +101,16 @@ namespace YouTubeNotifier.Common
             var movieIds = new List<string>();
             foreach (var channelInfo in targetYouTubeChannelIds)
             {
+                log.Infomation($"GetUploadedMovies({channelInfo.Id}, {fromUtc}, {toUtc})");
                 var channelMovieIds = await GetUploadedMovies(channelInfo.Id, fromUtc, toUtc);
+
+                log.Infomation($"channelMovieIds.Count={channelMovieIds.Count}");
                 movieIds.AddRange(channelMovieIds);
             }
+            log.Infomation($"movieIds.Count={movieIds.Count}");
 
-            // insert movies
+
+            log.Infomation($"Insert Movies");
             foreach (var movieId in movieIds)
             {
                 var insertPlaylistItemRequest = youTubeService.PlaylistItems.Insert(new PlaylistItem
@@ -109,6 +127,7 @@ namespace YouTubeNotifier.Common
                 }, "snippet");
 
                 insertPlaylistItemRequest.Fields = "";
+                log.Infomation($"insertPlaylistItemRequest VideoId={movieId}");
 
                 await insertPlaylistItemRequest.ExecuteAsync();
             }

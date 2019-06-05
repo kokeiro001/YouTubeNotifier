@@ -24,8 +24,20 @@ namespace YouTubeNotifier.ConsoleApp
                 }
             };
 
-            var youtubeNotifyService = new YouTubeNotifyService(config);
+            var myLogger = new MyLogger();
+
+            var youtubeNotifyService = new YouTubeNotifyService(config, myLogger);
+
             await youtubeNotifyService.Run();
         }
+    }
+
+    class MyLogger : IMyLogger
+    {
+        public void Infomation(string message) => Console.WriteLine($"Infomation {message}");
+
+        public void Warning(string message) => Console.WriteLine($"Warning {message}");
+
+        public void Error(string message) => Console.WriteLine($"Error {message}");
     }
 }
