@@ -150,6 +150,7 @@ namespace YouTubeNotifier.Common
                 listPlaylistRequest.PageToken = pageToken;
                 listPlaylistRequest.Fields = "nextPageToken,items/id,items/snippet/title";
 
+                log.Infomation("listPlaylistRequest.ExecuteAsync");
                 var listPlaylistResponse = await listPlaylistRequest.ExecuteAsync();
 
                 var playlist = listPlaylistResponse.Items
@@ -164,6 +165,8 @@ namespace YouTubeNotifier.Common
                 pageToken = listPlaylistResponse.NextPageToken;
                 page++;
 
+                log.Infomation($"listPlaylistResponse.NextPageToken={pageToken}, page={page}");
+                log.Infomation($")!string.IsNullOrEmpty({pageToken}) && {page} <= {maxPage}) == {!string.IsNullOrEmpty(pageToken) && page <= maxPage}");
             } while (!string.IsNullOrEmpty(pageToken) && page <= maxPage);
 
             // not found playlist. insert playlist.
@@ -182,6 +185,7 @@ namespace YouTubeNotifier.Common
 
             insertPlaylistRequest.Fields = "id";
 
+            log.Infomation("insertPlaylistRequest.ExecuteAsync");
             var insertPlaylistResponse = await insertPlaylistRequest.ExecuteAsync();
             return insertPlaylistResponse;
         }
@@ -206,6 +210,7 @@ namespace YouTubeNotifier.Common
                     subscriptionsListRequest.Fields += ",items/snippet/title";
                 }
 
+                log.Infomation("subscriptionsListRequest.ExecuteAsync");
                 var subscriptionList = await subscriptionsListRequest.ExecuteAsync();
 
                 foreach (var subscription in subscriptionList.Items)
@@ -242,6 +247,7 @@ namespace YouTubeNotifier.Common
                 searchRequest.Type = "video";
                 searchRequest.PageToken = pageToken;
 
+                log.Infomation("searchRequest.ExecuteAsync");
                 var searchResponse = await searchRequest.ExecuteAsync();
 
                 foreach (var item in searchResponse.Items)
