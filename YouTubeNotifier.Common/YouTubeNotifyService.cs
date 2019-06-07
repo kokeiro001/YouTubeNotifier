@@ -49,11 +49,11 @@ namespace YouTubeNotifier.Common
 
             if (config.StorageType == StorageType.LocalStorage)
             {
-                credential = await GetCredentialByLocalFile();
+                credential = await GetCredentialFromLocalFile();
             }
             else if(config.StorageType == StorageType.AzureTableStorage)
             {
-                credential = await GetCredentialByTableStoraeg();
+                credential = await GetCredentialFromTableStoraeg();
             }
             else
             {
@@ -140,7 +140,7 @@ namespace YouTubeNotifier.Common
             var playlistTitle = fromDateTimeJst.ToString("yyyy年M月dd日");
 
             var page = 0;
-            var maxPage = 3;
+            var maxPage = 1;
 
             do
             {
@@ -202,7 +202,7 @@ namespace YouTubeNotifier.Common
                 var subscriptionsListRequest = youTubeService.Subscriptions.List("snippet");
                 subscriptionsListRequest.Fields = "nextPageToken,items/snippet/resourceId/channelId";
                 subscriptionsListRequest.Mine = true;
-                subscriptionsListRequest.MaxResults = 5;
+                subscriptionsListRequest.MaxResults = 50;
                 subscriptionsListRequest.PageToken = pageToken;
 
                 if (showTitle)
@@ -217,7 +217,7 @@ namespace YouTubeNotifier.Common
                 {
                     if (showTitle)
                     {
-                        Console.WriteLine(subscription.Snippet.Title);
+                        log.Infomation(subscription.Snippet.Title);
                     }
                     list.Add(subscription);
                 }
@@ -267,7 +267,7 @@ namespace YouTubeNotifier.Common
             return list;
         }
 
-        private Task<UserCredential> GetCredentialByLocalFile()
+        private Task<UserCredential> GetCredentialFromLocalFile()
         {
             var clientSecretFilePath = config.LocalStorageConfig.ClientSecretFilePath;
 
@@ -285,7 +285,7 @@ namespace YouTubeNotifier.Common
             }
         }
 
-        private async Task<UserCredential> GetCredentialByTableStoraeg()
+        private async Task<UserCredential> GetCredentialFromTableStoraeg()
         {
             var cloudStorageAccountConnectionString = config.AzureTableStorageConfig.ConnectionString;
 
