@@ -16,7 +16,7 @@ namespace YouTubeNotifier.FunctionApp.Test
         {
             log.LogInformation("C# HTTP trigger function processed a request.");
 
-            var myLogger = new MyLogger(log);
+            var myLogger = new AzureFunctionLogger(log);
 
             await GeneratePlaylistFunction.GeneratePlaylist(myLogger);
 

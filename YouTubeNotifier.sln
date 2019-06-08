@@ -5,9 +5,9 @@ VisualStudioVersion = 16.0.28803.352
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "YouTubeNotifier.ConsoleApp", "YouTubeNotifier.ConsoleApp\YouTubeNotifier.ConsoleApp.csproj", "{20E5FB2C-BD2D-402B-A859-5DEC9924A255}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "YouTubeNotifier.FunctionApp", "YouTubeNotifier.FunctionApp\YouTubeNotifier.FunctionApp.csproj", "{BF46B737-C4D3-4779-BE32-C6B89DBC0A39}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "YouTubeNotifier.FunctionApp", "YouTubeNotifier.FunctionApp\YouTubeNotifier.FunctionApp.csproj", "{BF46B737-C4D3-4779-BE32-C6B89DBC0A39}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "YouTubeNotifier.Common", "YouTubeNotifier.Common\YouTubeNotifier.Common.csproj", "{D8D691E2-79B7-4CF3-B571-AEBCA1C1C644}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "YouTubeNotifier.Common", "YouTubeNotifier.Common\YouTubeNotifier.Common.csproj", "{D8D691E2-79B7-4CF3-B571-AEBCA1C1C644}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

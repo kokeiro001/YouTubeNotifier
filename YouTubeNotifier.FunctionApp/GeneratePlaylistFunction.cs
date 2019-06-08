@@ -16,20 +16,14 @@ namespace YouTubeNotifier.FunctionApp
         {
             log.LogInformation($"C# Timer trigger function executed at: {DateTime.UtcNow}");
 
-            var myLogger = new MyLogger(log);
+            var myLogger = new AzureFunctionLogger(log);
 
             await GeneratePlaylist(myLogger);
         }
 
-        public static async Task GeneratePlaylist(MyLogger myLogger)
+        public static async Task GeneratePlaylist(AzureFunctionLogger myLogger)
         {
-            var executingPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-
-            var config = new ConfigurationBuilder()
-                .SetBasePath(Path.GetDirectoryName(executingPath))
-                .AddJsonFile("local.settings.json", true, true)
-                .AddEnvironmentVariables()
-                .Build();
+            var config = Utility.GetConfig();
 
             var fromUtc = DateTime.UtcNow.AddHours(9).Date.AddDays(-1).AddHours(-9);
             var toUtc = fromUtc.AddDays(1).AddSeconds(-1);
@@ -49,22 +43,6 @@ namespace YouTubeNotifier.FunctionApp
             var youTubeNotifyService = new YouTubeNotifyService(serviceConfig, myLogger);
             await youTubeNotifyService.Run();
         }
-    }
 
-    // なんかいいnuget探してきたほうがいい
-    public class MyLogger : IMyLogger
-    {
-        private readonly ILogger log;
-
-        public MyLogger(ILogger log)
-        {
-            this.log = log;
-        }
-
-        public void Infomation(string message) => log.LogInformation(message);
-
-        public void Warning(string message) => log.LogWarning(message);
-
-        public void Error(string message) => log.LogError(message);
     }
 }
