@@ -103,7 +103,12 @@ namespace YouTubeNotifier.Common
             string serializedValue = JsonConvert.SerializeObject(value);
             string generatedStoreKey = GenerateStoredKey(key, typeof(T));
 
-            DataStoreItem item = new DataStoreItem() { PartitionKey = PARTITION_NAME, RowKey = generatedStoreKey, Value = serializedValue };
+            var item = new DataStoreItem()
+            {
+                PartitionKey = PARTITION_NAME,
+                RowKey = generatedStoreKey,
+                Value = serializedValue
+            };
 
             TableOperation insertOperation = TableOperation.InsertOrMerge(item);
             TableResult result = await _table.ExecuteAsync(insertOperation);
