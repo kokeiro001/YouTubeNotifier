@@ -2,9 +2,8 @@
 using Microsoft.WindowsAzure.Storage.Table;
 using System.Threading.Tasks;
 
-namespace YouTubeNotifier.Common
+namespace YouTubeNotifier.Common.Repository
 {
-
     public class SubscriptionChannelInfo : TableEntity
     {
         public string YouTubeChannelId { get; set; }

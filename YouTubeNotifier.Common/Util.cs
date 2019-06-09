@@ -67,7 +67,6 @@ namespace YouTubeNotifier.Common
         }
     }
 
-
     public static class ConverterExtensions
     {
         /// <summary>
