@@ -1,24 +1,14 @@
-﻿using Google.Apis.Auth.OAuth2;
-using Google.Apis.Services;
-using Google.Apis.Util.Store;
-using Google.Apis.YouTube.v3;
+﻿using Google.Apis.YouTube.v3;
 using Google.Apis.YouTube.v3.Data;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
-using YouTubeNotifier.Common.Repository;
 
 namespace YouTubeNotifier.Common.Service
 {
     public class YouTubeNotifyService
     {
-        private static readonly string[] Scopes = { YouTubeService.Scope.Youtube };
-        private static readonly string ApplicationName = "YouTubeNotifier";
-
         private readonly YouTubeNotifyServiceConfig config;
         private readonly IMyLogger log;
         private YouTubeService youTubeService;

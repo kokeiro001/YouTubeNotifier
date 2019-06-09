@@ -6,13 +6,13 @@ using YouTubeNotifier.Common.Repository;
 
 namespace YouTubeNotifier.Common.Service
 {
-    public class UpdateSubscribeChannelListService
+    public class SubscribeChannelService
     {
         private readonly YouTubeNotifyServiceConfig config;
         private readonly IMyLogger log;
         private YouTubeService youTubeService;
 
-        public UpdateSubscribeChannelListService(YouTubeNotifyServiceConfig config, IMyLogger log)
+        public SubscribeChannelService(YouTubeNotifyServiceConfig config, IMyLogger log)
         {
             this.config = config;
             this.log = log;
@@ -31,7 +31,6 @@ namespace YouTubeNotifier.Common.Service
                 await repository.AddOrInsert(categoryName, channel.Snippet.ChannelId, channel.Snippet.Title);
             }
         }
-
 
         private async Task<List<Subscription>> GetSubscriptionYouTubeChannels(bool getTitle)
         {

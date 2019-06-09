@@ -38,9 +38,9 @@ namespace YouTubeNotifier.FunctionApp.Functions
 
             var logger = new AzureFunctionLogger(log);
 
-            var updateSubscribeChannelListService = new UpdateSubscribeChannelListService(serviceConfig, logger);
+            var subscribeChannelService = new SubscribeChannelService(serviceConfig, logger);
 
-            await updateSubscribeChannelListService.UpdateSubscriptionChannelList("MyAccountSubscription");
+            await subscribeChannelService.UpdateSubscriptionChannelList("MyAccountSubscription");
 
             return new OkObjectResult("success");
         }
