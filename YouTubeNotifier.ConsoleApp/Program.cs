@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using YouTubeNotifier.Common;
+using YouTubeNotifier.Common.Service;
 
 namespace YouTubeNotifier.ConsoleApp
 {

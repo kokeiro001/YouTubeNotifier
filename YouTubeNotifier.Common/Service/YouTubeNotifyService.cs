@@ -12,18 +12,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using YouTubeNotifier.Common.Repository;
 
-namespace YouTubeNotifier.Common
+namespace YouTubeNotifier.Common.Service
 {
-    // なんかいいnuget探してきたほうがいい
-    public interface IMyLogger
-    {
-        void Infomation(string message);
-
-        void Warning(string message);
-
-        void Error(string message);
-    }
-
+    
     public class YouTubeNotifyService
     {
         private static readonly string[] Scopes = { YouTubeService.Scope.Youtube };
