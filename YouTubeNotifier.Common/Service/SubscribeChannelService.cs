@@ -28,7 +28,7 @@ namespace YouTubeNotifier.Common.Service
 
             foreach (var channel in channelList)
             {
-                await repository.AddOrInsert(categoryName, channel.Snippet.ChannelId, channel.Snippet.Title);
+                await repository.AddOrInsert(categoryName, channel.Snippet.ResourceId.ChannelId, channel.Snippet.Title);
             }
         }
 
