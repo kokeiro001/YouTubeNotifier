@@ -3,7 +3,11 @@ using Google.Apis.YouTube.v3.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
+using System.ServiceModel.Syndication;
+using System.Text;
 using System.Threading.Tasks;
+using System.Xml;
 using YouTubeNotifier.Common.Repository;
 
 namespace YouTubeNotifier.Common.Service
@@ -49,20 +53,11 @@ namespace YouTubeNotifier.Common.Service
             var fromUtc = config.FromDateTimeUtc;
             var toUtc = config.ToDateTimeUtc;
 
-            var movieIds = new List<string>();
-            foreach (var channelInfo in targetYouTubeChannelIds)
-            {
-                log.Infomation($"GetUploadedMovies({channelInfo.YouTubeChannelId}, {fromUtc}, {toUtc})");
-                var channelMovieIds = await GetUploadedMovies(channelInfo.YouTubeChannelId, fromUtc, toUtc);
-
-                log.Infomation($"channelMovieIds.Count={channelMovieIds.Count}");
-                movieIds.AddRange(channelMovieIds);
-            }
-            log.Infomation($"movieIds.Count={movieIds.Count}");
-
+            var videoInfos = await GetUploadedVideos(targetYouTubeChannelIds, fromUtc, toUtc);
+            log.Infomation($"movieIds.Count={videoInfos.Count}");
 
             log.Infomation($"Insert Movies");
-            foreach (var movieId in movieIds)
+            foreach (var videoInfo in videoInfos)
             {
                 var insertPlaylistItemRequest = youTubeService.PlaylistItems.Insert(new PlaylistItem
                 {
@@ -72,16 +67,56 @@ namespace YouTubeNotifier.Common.Service
                         ResourceId = new ResourceId
                         {
                             Kind = "youtube#video",
-                            VideoId = movieId,
+                            VideoId = videoInfo.videoId,
                         }
                     },
                 }, "snippet");
 
                 insertPlaylistItemRequest.Fields = "";
-                log.Infomation($"insertPlaylistItemRequest VideoId={movieId}");
+                log.Infomation($"insertPlaylistItemRequest VideoId={videoInfo}");
 
                 await insertPlaylistItemRequest.ExecuteAsync();
             }
+        }
+
+        private async Task<List<(DateTimeOffset publishDate, string title, string videoId)>> GetUploadedVideos(SubscriptionChannelInfo[] targetYouTubeChannelIds, DateTime fromUtc, DateTime toUtc)
+        {
+            var movieIds = new List<(DateTimeOffset publishDate, string title, string videoId)>();
+
+            using (var httpClient = new HttpClient())
+            {
+                foreach (var channelInfo in targetYouTubeChannelIds)
+                {
+                    log.Infomation($"GetUploadedMovies({channelInfo.YouTubeChannelId}, {fromUtc}, {toUtc})");
+
+                    var url = $"https://www.youtube.com/feeds/videos.xml?channel_id={channelInfo.YouTubeChannelId}";
+
+                    var rssContent = await httpClient.GetStringAsync(url);
+
+                    using (var memoryStream = rssContent.ToMemoryStream(Encoding.UTF8))
+                    using (var xmlReader = XmlReader.Create(memoryStream))
+                    {
+                        var syndicationFeed = SyndicationFeed.Load(xmlReader);
+
+                        var items = syndicationFeed.Items
+                            .Where(x => x.PublishDate.AddHours(9) >= fromUtc)
+                            .Where(x => x.PublishDate.AddHours(9) <= toUtc);
+
+                        foreach (var item in items)
+                        {
+                            var movieId = item.Links.First().Uri.Query.Split('=').Last();
+
+                            movieIds.Add((item.PublishDate, item.Title.Text, movieId));
+
+                            log.Infomation($"publishedDate={item.PublishDate} title={item.Title.Text} uri={item.Links.First().Uri} movieId={movieId}");
+                        }
+                    }
+
+                    await Task.Delay(TimeSpan.FromSeconds(1));
+                }
+            }
+
+            return movieIds;
         }
 
         private async Task<Playlist> GetOrInsertPlaylist(DateTime fromDateTimeJst)
@@ -141,7 +176,7 @@ namespace YouTubeNotifier.Common.Service
             return insertPlaylistResponse;
         }
 
-        private async Task<List<string>> GetUploadedMovies(string channelId, DateTime from, DateTime to)
+        private async Task<List<string>> GetUploadedVideoUsedApi(string channelId, DateTime from, DateTime to)
         {
             var list = new List<string>();
 
