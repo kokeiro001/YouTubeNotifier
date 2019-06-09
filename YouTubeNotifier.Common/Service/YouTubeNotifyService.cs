@@ -14,7 +14,6 @@ using YouTubeNotifier.Common.Repository;
 
 namespace YouTubeNotifier.Common.Service
 {
-    
     public class YouTubeNotifyService
     {
         private static readonly string[] Scopes = { YouTubeService.Scope.Youtube };
