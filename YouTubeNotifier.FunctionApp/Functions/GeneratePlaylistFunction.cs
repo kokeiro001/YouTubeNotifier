@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 using YouTubeNotifier.Common;
 using YouTubeNotifier.Common.Service;
 
-namespace YouTubeNotifier.FunctionApp
+namespace YouTubeNotifier.FunctionApp.Functions
 {
     public static class GeneratePlaylistFunction
     {
