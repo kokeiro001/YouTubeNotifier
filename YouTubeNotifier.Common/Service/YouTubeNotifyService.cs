@@ -29,39 +29,10 @@ namespace YouTubeNotifier.Common.Service
             this.log = log;
         }
 
-        private async Task CreateYoutubeService()
-        {
-            if (youTubeService != null)
-            {
-                throw new Exception($"already created {nameof(youTubeService)}");
-            }
-
-            UserCredential credential;
-
-            if (config.StorageType == StorageType.LocalStorage)
-            {
-                credential = await GetCredentialFromLocalFile();
-            }
-            else if(config.StorageType == StorageType.AzureTableStorage)
-            {
-                credential = await GetCredentialFromTableStoraeg();
-            }
-            else
-            {
-                throw new Exception($"unexpedted type config.StorageType={config.StorageType}");
-            }
-
-            youTubeService = new YouTubeService(new BaseClientService.Initializer()
-            {
-                HttpClientInitializer = credential,
-                ApplicationName = ApplicationName,
-            });
-        }
-
         public async Task Run()
         {
             log.Infomation("CreateYoutubeService");
-            await CreateYoutubeService();
+            youTubeService = await YoutubeServiceCreator.Create(config);
 
             var fromDateTimeJst = config.FromDateTimeUtc.AddHours(9);
             log.Infomation($"fromDateTimeJst={fromDateTimeJst}");
@@ -74,7 +45,9 @@ namespace YouTubeNotifier.Common.Service
                 throw new NotSupportedException(nameof(config.UseCache));
             }
             log.Infomation($"GetSubscriptionYouTubeChannels");
-            var targetYouTubeChannelIds = await GetSubscriptionYouTubeChannels(false);
+            // TODO: get channel ids from azure storage
+            //var targetYouTubeChannelIds = await GetSubscriptionYouTubeChannels(false);
+            var targetYouTubeChannelIds = new List<Subscription>();
             log.Infomation($"targetYouTubeChannelIds.Count={targetYouTubeChannelIds.Count}");
 
             var fromUtc = config.FromDateTimeUtc;
@@ -172,39 +145,6 @@ namespace YouTubeNotifier.Common.Service
             return insertPlaylistResponse;
         }
 
-        private async Task<List<Subscription>> GetSubscriptionYouTubeChannels(bool getTitle)
-        {
-            var list = new List<Subscription>();
-            var pageToken = default(string);
-
-            do
-            {
-                var subscriptionsListRequest = youTubeService.Subscriptions.List("snippet");
-                subscriptionsListRequest.Fields = "nextPageToken,items/snippet/resourceId/channelId";
-                subscriptionsListRequest.Mine = true;
-                subscriptionsListRequest.MaxResults = 50;
-                subscriptionsListRequest.PageToken = pageToken;
-
-                if (getTitle)
-                {
-                    subscriptionsListRequest.Fields += ",items/snippet/title";
-                }
-
-                log.Infomation("subscriptionsListRequest.ExecuteAsync");
-                var subscriptionList = await subscriptionsListRequest.ExecuteAsync();
-
-                foreach (var subscription in subscriptionList.Items)
-                {
-                    list.Add(subscription);
-                }
-
-                pageToken = subscriptionList.NextPageToken;
-            }
-            while (!string.IsNullOrEmpty(pageToken));
-
-            return list;
-        }
-
         private async Task<List<string>> GetUploadedMovies(string channelId, DateTime from, DateTime to)
         {
             var list = new List<string>();
@@ -241,59 +181,6 @@ namespace YouTubeNotifier.Common.Service
             while (!string.IsNullOrEmpty(pageToken));
 
             return list;
-        }
-
-        private Task<UserCredential> GetCredentialFromLocalFile()
-        {
-            var clientSecretFilePath = config.LocalStorageConfig.ClientSecretFilePath;
-
-            using (var stream = new FileStream(clientSecretFilePath, FileMode.Open, FileAccess.Read))
-            {
-                var dataStore = new FileDataStore(config.LocalStorageConfig.CredentialsDirectory, true);
-
-                return GoogleWebAuthorizationBroker.AuthorizeAsync(
-                    GoogleClientSecrets.Load(stream).Secrets,
-                    Scopes,
-                    "user",
-                    CancellationToken.None,
-                    dataStore
-                );
-            }
-        }
-
-        private async Task<UserCredential> GetCredentialFromTableStoraeg()
-        {
-            var cloudStorageAccountConnectionString = config.AzureTableStorageConfig.ConnectionString;
-
-            var secretStore = new TableStorageSecretStore(cloudStorageAccountConnectionString);
-            var secretText = await secretStore.GetSecret();
-
-            using (var stream = secretText.ToMemoryStream(Encoding.UTF8))
-            {
-                var dataStore = new TableStorageDataStore(cloudStorageAccountConnectionString);
-
-                return await GoogleWebAuthorizationBroker.AuthorizeAsync(
-                    GoogleClientSecrets.Load(stream).Secrets,
-                    Scopes,
-                    "user",
-                    CancellationToken.None,
-                    dataStore
-                );
-            }
-        }
-
-        public async Task UpdateSubscriptionChannelList(string categoryName)
-        {
-            var repository = new SubscriptionChannelRepository(config.AzureTableStorageConfig.ConnectionString);
-
-            await CreateYoutubeService();
-
-            var channelList = await GetSubscriptionYouTubeChannels(true);
-
-            foreach (var channel in channelList)
-            {
-                await repository.AddOrInsert(categoryName, channel.Snippet.ChannelId, channel.Snippet.Title);
-            }
         }
     }
 }
