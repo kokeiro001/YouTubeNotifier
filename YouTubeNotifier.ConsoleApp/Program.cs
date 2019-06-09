@@ -27,7 +27,8 @@ namespace YouTubeNotifier.ConsoleApp
 
             var myLogger = new ConsoleLogger();
 
-            var youtubeNotifyService = new YouTubeNotifyService(config, myLogger);
+            // TODO: create repository
+            var youtubeNotifyService = new YouTubeNotifyService(config, null, myLogger);
 
             await youtubeNotifyService.Run();
         }

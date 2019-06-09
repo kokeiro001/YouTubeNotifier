@@ -4,18 +4,25 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using YouTubeNotifier.Common.Repository;
 
 namespace YouTubeNotifier.Common.Service
 {
     public class YouTubeNotifyService
     {
         private readonly YouTubeNotifyServiceConfig config;
+        private readonly SubscriptionChannelRepository subscriptionChannelRepository;
         private readonly IMyLogger log;
         private YouTubeService youTubeService;
 
-        public YouTubeNotifyService(YouTubeNotifyServiceConfig config, IMyLogger log)
+        public YouTubeNotifyService(
+            YouTubeNotifyServiceConfig config,
+            SubscriptionChannelRepository subscriptionChannelRepository,
+            IMyLogger log
+        )
         {
             this.config = config;
+            this.subscriptionChannelRepository = subscriptionChannelRepository;
             this.log = log;
         }
 
@@ -35,10 +42,9 @@ namespace YouTubeNotifier.Common.Service
                 throw new NotSupportedException(nameof(config.UseCache));
             }
             log.Infomation($"GetSubscriptionYouTubeChannels");
-            // TODO: get channel ids from azure storage
-            //var targetYouTubeChannelIds = await GetSubscriptionYouTubeChannels(false);
-            var targetYouTubeChannelIds = new List<Subscription>();
-            log.Infomation($"targetYouTubeChannelIds.Count={targetYouTubeChannelIds.Count}");
+            var targetYouTubeChannelIds = await subscriptionChannelRepository.GetByCategory("MyAccountSubscription");
+
+            log.Infomation($"targetYouTubeChannelIds.Count={targetYouTubeChannelIds.Length}");
 
             var fromUtc = config.FromDateTimeUtc;
             var toUtc = config.ToDateTimeUtc;
@@ -46,8 +52,8 @@ namespace YouTubeNotifier.Common.Service
             var movieIds = new List<string>();
             foreach (var channelInfo in targetYouTubeChannelIds)
             {
-                log.Infomation($"GetUploadedMovies({channelInfo.Id}, {fromUtc}, {toUtc})");
-                var channelMovieIds = await GetUploadedMovies(channelInfo.Id, fromUtc, toUtc);
+                log.Infomation($"GetUploadedMovies({channelInfo.YouTubeChannelId}, {fromUtc}, {toUtc})");
+                var channelMovieIds = await GetUploadedMovies(channelInfo.YouTubeChannelId, fromUtc, toUtc);
 
                 log.Infomation($"channelMovieIds.Count={channelMovieIds.Count}");
                 movieIds.AddRange(channelMovieIds);

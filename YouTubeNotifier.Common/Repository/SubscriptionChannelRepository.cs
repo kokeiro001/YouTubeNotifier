@@ -1,5 +1,6 @@
 ﻿using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Table;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace YouTubeNotifier.Common.Repository
@@ -19,7 +20,7 @@ namespace YouTubeNotifier.Common.Repository
         }
     }
 
-    class SubscriptionChannelRepository
+    public class SubscriptionChannelRepository
     {
         public static readonly string TableName = "SubscriptionChannels";
 
@@ -48,6 +49,20 @@ namespace YouTubeNotifier.Common.Repository
             var insertOperation = TableOperation.InsertOrMerge(subscriptionChannelInfo);
 
             await cloudTable.ExecuteAsync(insertOperation);
+        }
+
+        public async Task<SubscriptionChannelInfo[]> GetByCategory(string categoryName)
+        {
+            var propertyName = nameof(SubscriptionChannelInfo.PartitionKey);
+
+            var filter = TableQuery.GenerateFilterCondition(propertyName, QueryComparisons.Equal, categoryName);
+
+            var query = new TableQuery<SubscriptionChannelInfo>().Where(filter);
+
+            var items = await cloudTable
+                .ExecuteQuerySegmentedAsync(query, new TableContinuationToken());
+
+            return items.ToArray();
         }
     }
 }

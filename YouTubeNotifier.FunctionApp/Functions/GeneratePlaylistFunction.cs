@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
 using YouTubeNotifier.Common;
+using YouTubeNotifier.Common.Repository;
 using YouTubeNotifier.Common.Service;
 
 namespace YouTubeNotifier.FunctionApp.Functions
@@ -38,7 +39,9 @@ namespace YouTubeNotifier.FunctionApp.Functions
                 },
             };
 
-            var youTubeNotifyService = new YouTubeNotifyService(serviceConfig, myLogger);
+            var subscriptionChannelRepository = new SubscriptionChannelRepository(config["AzureWebJobsStorage"]);
+
+            var youTubeNotifyService = new YouTubeNotifyService(serviceConfig, subscriptionChannelRepository, myLogger);
 
             await youTubeNotifyService.Run();
         }
