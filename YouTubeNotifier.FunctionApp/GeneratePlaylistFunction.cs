@@ -1,9 +1,6 @@
 using System;
-using System.IO;
-using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using YouTubeNotifier.Common;
 
@@ -41,8 +38,8 @@ namespace YouTubeNotifier.FunctionApp
             };
 
             var youTubeNotifyService = new YouTubeNotifyService(serviceConfig, myLogger);
+
             await youTubeNotifyService.Run();
         }
-
     }
 }

@@ -15,6 +15,7 @@ namespace YouTubeNotifier.FunctionApp
                 .AddJsonFile("local.settings.json", true, true)
                 .AddEnvironmentVariables()
                 .Build();
+
             return config;
         }
     }

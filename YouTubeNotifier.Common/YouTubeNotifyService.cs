@@ -78,22 +78,13 @@ namespace YouTubeNotifier.Common
             log.Infomation($"GetOrInsertPlaylist({fromDateTimeJst})");
             var insertPlaylistResponse = await GetOrInsertPlaylist(fromDateTimeJst);
 
-            var targetYouTubeChannelIds = default(List<Subscription>);
-
             if (config.UseCache)
             {
-                targetYouTubeChannelIds = await Util.Cache(async () =>
-                {
-                    return await GetSubscriptionYouTubeChannels();
-                },
-                fromDateTimeJst.ToString("yyyyMMdd"));
+                throw new NotSupportedException(nameof(config.UseCache));
             }
-            else
-            {
-                log.Infomation($"GetSubscriptionYouTubeChannels");
-                targetYouTubeChannelIds = await GetSubscriptionYouTubeChannels();
-                log.Infomation($"targetYouTubeChannelIds.Count={targetYouTubeChannelIds.Count}");
-            }
+            log.Infomation($"GetSubscriptionYouTubeChannels");
+            var targetYouTubeChannelIds = await GetSubscriptionYouTubeChannels(false);
+            log.Infomation($"targetYouTubeChannelIds.Count={targetYouTubeChannelIds.Count}");
 
             var fromUtc = config.FromDateTimeUtc;
             var toUtc = config.ToDateTimeUtc;
@@ -190,22 +181,20 @@ namespace YouTubeNotifier.Common
             return insertPlaylistResponse;
         }
 
-        private async Task<List<Subscription>> GetSubscriptionYouTubeChannels()
+        private async Task<List<Subscription>> GetSubscriptionYouTubeChannels(bool getTitle)
         {
             var list = new List<Subscription>();
             var pageToken = default(string);
 
             do
             {
-                var showTitle = false;
-
                 var subscriptionsListRequest = youTubeService.Subscriptions.List("snippet");
                 subscriptionsListRequest.Fields = "nextPageToken,items/snippet/resourceId/channelId";
                 subscriptionsListRequest.Mine = true;
                 subscriptionsListRequest.MaxResults = 50;
                 subscriptionsListRequest.PageToken = pageToken;
 
-                if (showTitle)
+                if (getTitle)
                 {
                     subscriptionsListRequest.Fields += ",items/snippet/title";
                 }
@@ -215,10 +204,6 @@ namespace YouTubeNotifier.Common
 
                 foreach (var subscription in subscriptionList.Items)
                 {
-                    if (showTitle)
-                    {
-                        log.Infomation(subscription.Snippet.Title);
-                    }
                     list.Add(subscription);
                 }
 
@@ -303,6 +288,20 @@ namespace YouTubeNotifier.Common
                     CancellationToken.None,
                     dataStore
                 );
+            }
+        }
+
+        public async Task UpdateSubscriptionChannelList(string categoryName)
+        {
+            var repository = new SubscriptionChannelRepository(config.AzureTableStorageConfig.ConnectionString);
+
+            await CreateYoutubeService();
+
+            var channelList = await GetSubscriptionYouTubeChannels(true);
+
+            foreach (var channel in channelList)
+            {
+                await repository.AddOrInsert(categoryName, channel.Snippet.ChannelId, channel.Snippet.Title);
             }
         }
     }
