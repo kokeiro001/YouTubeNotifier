@@ -43,7 +43,8 @@ namespace YouTubeNotifier.FunctionApp.Functions
 
             var youTubeNotifyService = new YouTubeNotifyService(serviceConfig, subscriptionChannelRepository, myLogger);
 
-            await youTubeNotifyService.Run();
+            //await youTubeNotifyService.Run("MyAccountSubscription");
+            await youTubeNotifyService.Run("FavoriteVTubers");
         }
     }
 }

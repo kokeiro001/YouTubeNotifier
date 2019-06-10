@@ -30,7 +30,7 @@ namespace YouTubeNotifier.ConsoleApp
             // TODO: create repository
             var youtubeNotifyService = new YouTubeNotifyService(config, null, myLogger);
 
-            await youtubeNotifyService.Run();
+            await youtubeNotifyService.Run("FavoriteVTubers");
         }
     }
 }

@@ -1,6 +1,8 @@
 ﻿using Google.Apis.YouTube.v3;
 using Google.Apis.YouTube.v3.Data;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using YouTubeNotifier.Common.Repository;
 
@@ -63,6 +65,26 @@ namespace YouTubeNotifier.Common.Service
             while (!string.IsNullOrEmpty(pageToken));
 
             return list;
+        }
+
+        // TODO: AzureFunctionsでcsv入力はやばい。ローカルで動かす限定の作りになってる。
+        // コンソールアプリに移動する。
+        public async Task UpdateSubscriptionChannelListByCsv(string categoryName, string csvFilePath)
+        {
+            var repository = new SubscriptionChannelRepository(config.AzureTableStorageConfig.ConnectionString);
+
+            youTubeService = await YoutubeServiceCreator.Create(config);
+
+            var channelIds = File.ReadAllLines(csvFilePath)
+                .Skip(1)
+                .Take(100)
+                .Select(x => x.Split(',')[2].Trim('"', ' '))
+                .Select(x => x.Replace("https://www.youtube.com/channel/", ""));
+
+            foreach (var channelId in channelIds)
+            {
+                await repository.AddOrInsert(categoryName, channelId, null);
+            }
         }
     }
 }

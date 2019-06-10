@@ -30,7 +30,7 @@ namespace YouTubeNotifier.Common.Service
             this.log = log;
         }
 
-        public async Task Run()
+        public async Task Run(string categoryName)
         {
             log.Infomation("CreateYoutubeService");
             youTubeService = await YoutubeServiceCreator.Create(config);
@@ -46,7 +46,7 @@ namespace YouTubeNotifier.Common.Service
                 throw new NotSupportedException(nameof(config.UseCache));
             }
             log.Infomation($"GetSubscriptionYouTubeChannels");
-            var targetYouTubeChannelIds = await subscriptionChannelRepository.GetByCategory("MyAccountSubscription");
+            var targetYouTubeChannelIds = await subscriptionChannelRepository.GetByCategory(categoryName);
 
             log.Infomation($"targetYouTubeChannelIds.Count={targetYouTubeChannelIds.Length}");
 
