@@ -165,7 +165,7 @@ namespace YouTubeNotifier.Common.Service
                 },
                 Status = new PlaylistStatus
                 {
-                    PrivacyStatus = "private",
+                    PrivacyStatus = "unlisted",
                 },
             }, "snippet,status");
 
