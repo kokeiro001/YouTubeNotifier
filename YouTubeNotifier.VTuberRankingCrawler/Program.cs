@@ -6,10 +6,18 @@ using System.Threading.Tasks;
 
 namespace YouTubeNotifier.VTuberRankingCrawler
 {
+    public class Settings
+    {
+        public string AzureCloudStorageConnectionString { get; set; }
+    }
+
     class Program
     {
         static async Task Main()
         {
+            var settingsJson = File.ReadAllText(@"settings.json");
+            var settings = JsonConvert.DeserializeObject<Settings>(settingsJson);
+
             var vtuberInsightCrawler = new VTuberInsightCrawler();
 
             var rankingItems = await vtuberInsightCrawler.Run();
@@ -19,13 +27,11 @@ namespace YouTubeNotifier.VTuberRankingCrawler
                 Console.WriteLine($"{rankingItem.Rank:D3} {rankingItem.ChannelName} {rankingItem.ChannelId}");
             }
 
-            await UploadFile(rankingItems);
+            await UploadFile(settings.AzureCloudStorageConnectionString, rankingItems);
         }
 
-        private static async Task UploadFile(YouTubeChannelRankingItem[] rankingItems)
+        private static async Task UploadFile(string connectionString, YouTubeChannelRankingItem[] rankingItems)
         {
-            var connectionString = @"";
-
             var blobStorageClient = new BlobStorageClient(connectionString, "vtuberranking", "VTuberInsight");
 
             var content = JsonConvert.SerializeObject(rankingItems);
