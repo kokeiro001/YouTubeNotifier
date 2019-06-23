@@ -75,7 +75,7 @@ namespace YouTubeNotifier.VTuberRankingCrawler
                 {
                     Rank = int.Parse(tds[1].TextContent),
                     ChannelName = tds[3].TextContent,
-                    ChannelId = tds[3].QuerySelector("a").Id,
+                    ChannelId = tds[3].QuerySelector("a")?.Id,
                 });
             }
 
