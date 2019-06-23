@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "YouTubeNotifier.VTuberRankingCrawler": {
+      "commandName": "Project"
+    },
+    "Docker": {
+      "commandName": "Docker"
+    }
+  }
+}
