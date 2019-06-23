@@ -12,6 +12,8 @@ namespace YouTubeNotifier.VTuberRankingCrawler
         public int Rank { get; set; }
 
         public string ChannelName { get; set; }
+
+        public string ChannelId { get; set; }
     }
 
     class VTuberInsightCrawler
@@ -73,6 +75,7 @@ namespace YouTubeNotifier.VTuberRankingCrawler
                 {
                     Rank = int.Parse(tds[1].TextContent),
                     ChannelName = tds[3].TextContent,
+                    ChannelId = tds[3].QuerySelector("a").Id,
                 });
             }
 

@@ -15,7 +15,7 @@ namespace YouTubeNotifier.VTuberRankingCrawler
 
                 foreach (var rankingItem in rankingItems)
                 {
-                    Console.WriteLine($"{rankingItem.Rank:D3} {rankingItem.ChannelName}");
+                    Console.WriteLine($"{rankingItem.Rank:D3} {rankingItem.ChannelName} {rankingItem.ChannelId}");
                 }
             }
             catch (Exception e)
