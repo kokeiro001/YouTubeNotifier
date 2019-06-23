@@ -9,6 +9,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "YouTubeNotifier.FunctionApp
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "YouTubeNotifier.Common", "YouTubeNotifier.Common\YouTubeNotifier.Common.csproj", "{D8D691E2-79B7-4CF3-B571-AEBCA1C1C644}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "YouTubeNotifier.VTuberRankingCrawler", "YouTubeNotifier.VTuberRankingCrawler\YouTubeNotifier.VTuberRankingCrawler.csproj", "{CA3DA9BE-AF6E-47A8-8B06-FED53DDA81CC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{D8D691E2-79B7-4CF3-B571-AEBCA1C1C644}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D8D691E2-79B7-4CF3-B571-AEBCA1C1C644}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D8D691E2-79B7-4CF3-B571-AEBCA1C1C644}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CA3DA9BE-AF6E-47A8-8B06-FED53DDA81CC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CA3DA9BE-AF6E-47A8-8B06-FED53DDA81CC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CA3DA9BE-AF6E-47A8-8B06-FED53DDA81CC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CA3DA9BE-AF6E-47A8-8B06-FED53DDA81CC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
