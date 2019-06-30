@@ -17,7 +17,7 @@ namespace YouTubeNotifier.FunctionApp.Functions
 
             var myLogger = new AzureFunctionLogger(log);
 
-            await GeneratePlaylist(myLogger);
+            //await GeneratePlaylist(myLogger);
         }
 
         public static async Task GeneratePlaylist(AzureFunctionLogger myLogger)
