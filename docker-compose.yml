@@ -1,0 +1,8 @@
+version: '3.4'
+
+services:
+  youtubenotifier.vtuberrankingcrawler:
+    image: kokeiro001/youtubenotifiervtuberrankingcrawler
+    build:
+      context: .
+      dockerfile: YouTubeNotifier.VTuberRankingCrawler/Dockerfile
