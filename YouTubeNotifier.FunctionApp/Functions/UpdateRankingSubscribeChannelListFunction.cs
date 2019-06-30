@@ -30,10 +30,7 @@ namespace YouTubeNotifier.FunctionApp.Functions
                 UseCache = false,
                 FromDateTimeUtc = fromUtc,
                 ToDateTimeUtc = toUtc,
-                AzureTableStorageConfig = new AzureTableStorageConfig
-                {
-                    ConnectionString = config["AzureWebJobsStorage"],
-                },
+                AzureTableStorageConnectionString= config["AzureWebJobsStorage"],
             };
 
             var csvFilePath = @"C:\Users\kokei\Downloads\VtuberInsight_export_subscriberCount_2019_6_11_1_5.csv";

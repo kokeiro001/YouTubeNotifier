@@ -10,11 +10,6 @@ namespace YouTubeNotifier.Common
 
         public bool UseCache { get; set; }
 
-        public AzureTableStorageConfig AzureTableStorageConfig { get; set; }
-    }
-
-    public class AzureTableStorageConfig
-    {
-        public string ConnectionString { get; set; }
+        public string AzureTableStorageConnectionString { get; set; }
     }
 }

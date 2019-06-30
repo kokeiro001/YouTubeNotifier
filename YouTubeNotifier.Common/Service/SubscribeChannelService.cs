@@ -22,7 +22,7 @@ namespace YouTubeNotifier.Common.Service
 
         public async Task UpdateSubscriptionChannelList(string categoryName)
         {
-            var repository = new SubscriptionChannelRepository(config.AzureTableStorageConfig.ConnectionString);
+            var repository = new SubscriptionChannelRepository(config.AzureTableStorageConnectionString);
 
             youTubeService = await YoutubeServiceCreator.Create(config);
 
@@ -71,7 +71,7 @@ namespace YouTubeNotifier.Common.Service
         // コンソールアプリに移動する。
         public async Task UpdateSubscriptionChannelListByCsv(string categoryName, string csvFilePath)
         {
-            var repository = new SubscriptionChannelRepository(config.AzureTableStorageConfig.ConnectionString);
+            var repository = new SubscriptionChannelRepository(config.AzureTableStorageConnectionString);
 
             youTubeService = await YoutubeServiceCreator.Create(config);
 

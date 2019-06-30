@@ -29,7 +29,7 @@ namespace YouTubeNotifier.Common.Service
 
         private static async Task<UserCredential> GetCredentialFromTableStoraeg(YouTubeNotifyServiceConfig config)
         {
-            var cloudStorageAccountConnectionString = config.AzureTableStorageConfig.ConnectionString;
+            var cloudStorageAccountConnectionString = config.AzureTableStorageConnectionString;
 
             var secretStore = new TableStorageSecretStore(cloudStorageAccountConnectionString);
             var secretText = await secretStore.GetSecret();

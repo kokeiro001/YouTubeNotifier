@@ -32,10 +32,7 @@ namespace YouTubeNotifier.FunctionApp.Functions
                 UseCache = false,
                 FromDateTimeUtc = fromUtc,
                 ToDateTimeUtc = toUtc,
-                AzureTableStorageConfig = new AzureTableStorageConfig
-                {
-                    ConnectionString = config["AzureWebJobsStorage"],
-                },
+                AzureTableStorageConnectionString = config["AzureWebJobsStorage"],
             };
 
             var subscriptionChannelRepository = new SubscriptionChannelRepository(config["AzureWebJobsStorage"]);
