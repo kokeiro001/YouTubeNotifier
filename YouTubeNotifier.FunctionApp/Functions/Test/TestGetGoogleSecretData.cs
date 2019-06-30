@@ -32,7 +32,7 @@ namespace YouTubeNotifier.FunctionApp.Functions.Test
 
             var connectionString = config["AzureWebJobsStorage"];
 
-            GetCredentialFromTableStoraeg(connectionString).Wait();
+            await GetCredentialFromTableStoraeg(connectionString);
 
             return new OkResult();
         }

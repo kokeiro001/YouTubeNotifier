@@ -27,7 +27,6 @@ namespace YouTubeNotifier.FunctionApp.Functions
 
             var serviceConfig = new YouTubeNotifyServiceConfig
             {
-                StorageType = StorageType.AzureTableStorage,
                 UseCache = false,
                 FromDateTimeUtc = fromUtc,
                 ToDateTimeUtc = toUtc,
