@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/dotnet/core/runtime:2.2-stretch-slim AS runtime
+FROM mcr.microsoft.com/dotnet/core/runtime:2.2-stretch-slim AS base
 
 ADD https://dl.google.com/linux/direct/google-talkplugin_current_amd64.deb /src/google-talkplugin_current_amd64.deb
 
