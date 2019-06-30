@@ -31,21 +31,28 @@ namespace YouTubeNotifier.VTuberRankingCrawler
 
                     var html = await GetPageSource();
 
+                    Console.WriteLine("** Begin Parse");
+
                     var rankingItems = Parse(html).ToArray();
+
+                    Console.WriteLine($"** rankingItems.Length={rankingItems.Length}");
 
                     if (rankingItems.Length > 0)
                     {
                         return rankingItems;
                     }
                 }
-                catch
+                catch (Exception e)
                 {
+                    Console.WriteLine($"** e.Message={e.Message}");
+                    Console.WriteLine($"** e.StackTrace={e.StackTrace}");
                     if (retryCount >= maxRetryCount)
                     {
                         throw;
                     }
                 }
 
+                Console.WriteLine($"** failed GetRankingItems. retryCount={retryCount}");
                 await Task.Delay(TimeSpan.FromSeconds(5));
             }
             while (retryCount < maxRetryCount);
@@ -90,19 +97,33 @@ namespace YouTubeNotifier.VTuberRankingCrawler
 
             var options = new ChromeOptions();
             options.AddArguments("headless");
+            options.AddArguments("--disable-gpu");
             options.AddArguments("no-sandbox");
+            options.AddArguments("--window-size=1,1");
             options.BinaryLocation = "/opt/google/chrome/chrome";
+
+            Console.WriteLine("** BeginCreate ChromeDriver");
             using (var service = ChromeDriverService.CreateDefaultService(driverPath, driverExecutableFileName))
-            using (var driver = new ChromeDriver(service, options, TimeSpan.FromSeconds(30)))
+            using (var driver = new ChromeDriver(service, options, TimeSpan.FromSeconds(60)))
             {
-                driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(40);
-                driver.Manage().Window.Maximize();
+                Console.WriteLine("** Created ChromeDriver");
+                driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(5);
+                //driver.Manage().Window.Maximize();
+                driver.Manage().Window.Minimize();
 
                 var url = @"https://vtuber-insight.com/index.html";
 
+                Console.WriteLine($"** GoToUrl({url})");
                 driver.Navigate().GoToUrl(url);
+                Console.WriteLine($"** Navigated {url}");
 
-                await Task.Delay(TimeSpan.FromSeconds(20));
+                for (int i = 20; i > 0; i--)
+                {
+                    Console.WriteLine($"** Wait {i} seconds for web socket");
+                    await Task.Delay(TimeSpan.FromSeconds(1));
+                }
+
+                Console.WriteLine("get drive.PageSource");
 
                 return driver.PageSource;
             }
