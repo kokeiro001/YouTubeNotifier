@@ -100,6 +100,9 @@ namespace YouTubeNotifier.VTuberRankingCrawler
             options.AddArguments("--disable-gpu");
             options.AddArguments("no-sandbox");
             options.AddArguments("--window-size=1,1");
+            options.AddArguments("--disable-desktop-notifications");
+            options.AddArguments("--disable-extensions");
+            options.AddArguments("--blink-settings=imagesEnabled=false");
             options.BinaryLocation = "/opt/google/chrome/chrome";
 
             Console.WriteLine("** BeginCreate ChromeDriver");
