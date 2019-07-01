@@ -9,7 +9,7 @@ namespace YouTubeNotifier.VTuberRankingCrawler
 {
     class YouTubeChannelRssCrawler
     {
-        public async Task<YouTubeRssItem[]> GetUploadedMovieIds(string[] youtubeChannelIds, DateTime fromUtc, DateTime toUtc)
+        public async Task<YouTubeRssItem[]> GetUploadedMovies(string[] youtubeChannelIds, DateTime fromUtc, DateTime toUtc)
         {
             var list = new List<YouTubeRssItem>();
 
