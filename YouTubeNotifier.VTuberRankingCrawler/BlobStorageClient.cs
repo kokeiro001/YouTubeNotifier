@@ -1,6 +1,9 @@
 ﻿using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Blob;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace YouTubeNotifier.VTuberRankingCrawler
@@ -23,6 +26,40 @@ namespace YouTubeNotifier.VTuberRankingCrawler
         {
             var blob = blobDirectory.GetBlockBlobReference(name);
             await blob.UploadFromStreamAsync(stream);
+        }
+
+        public async Task<CloudBlockBlob[]> ListFiles()
+        {
+            var token = new BlobContinuationToken();
+
+            var list = new List<CloudBlockBlob>();
+
+            do
+            {
+                var result = await blobDirectory.ListBlobsSegmentedAsync(token);
+
+                var cloudBlockBlobs = result.Results
+                    .Select(x => x as CloudBlockBlob)
+                    .Where(x => x != null);
+
+                list.AddRange(cloudBlockBlobs);
+
+                token = result.ContinuationToken;
+            }
+            while (token != null);
+
+            return list.ToArray();
+        }
+
+        public async Task<string> GetString(string name)
+        {
+            var blob = blobDirectory.GetBlobReference(name);
+            using (var memoryStream = new MemoryStream())
+            {
+                await blob.DownloadToStreamAsync(memoryStream);
+
+                return memoryStream.ToStringWithEncoding(Encoding.UTF8);
+            }
         }
     }
 }

@@ -111,7 +111,6 @@ namespace YouTubeNotifier.VTuberRankingCrawler
             {
                 Console.WriteLine("** Created ChromeDriver");
                 driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(5);
-                //driver.Manage().Window.Maximize();
                 driver.Manage().Window.Minimize();
 
                 var url = @"https://vtuber-insight.com/index.html";
