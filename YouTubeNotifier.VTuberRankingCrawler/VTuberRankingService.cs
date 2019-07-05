@@ -29,7 +29,7 @@ namespace YouTubeNotifier.VTuberRankingCrawler
 
             await youtubeBlobService.UploadVTuberInsightCsvFile(rankingItems);
 
-            var fromUtc = DateTime.UtcNow.Date.AddDays(-1);
+            var fromUtc = DateTime.UtcNow.AddHours(9).Date.AddDays(-2).AddHours(-9);
             var toUtc = fromUtc.AddDays(1);
 
             var latestYouYubeRssItems = await GetMovieIds(fromUtc, toUtc);
