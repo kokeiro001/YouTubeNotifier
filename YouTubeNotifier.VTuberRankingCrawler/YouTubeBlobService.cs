@@ -57,5 +57,20 @@ namespace YouTubeNotifier.VTuberRankingCrawler
                 await blobStorageClient.UploadBlob(fileName, memoryStream);
             }
         }
+
+        public async Task<YouTubeRssItem[]> DownloadLatestYouTubeMovies()
+        {
+            var blobStorageClient = new BlobStorageClient(azureStorageConnectionString, "vtuberranking", "NewMovies");
+
+            var files = await blobStorageClient.ListFiles();
+
+            var data = files.OrderByDescending(x => x.Name);
+
+            var latestFile = data.First();
+
+            var text = await latestFile.DownloadTextAsync();
+
+            return JsonConvert.DeserializeObject<YouTubeRssItem[]>(text);
+        }
     }
 }

@@ -18,8 +18,6 @@ namespace YouTubeNotifier.FunctionApp.Functions.Test
     public static class TestGetGoogleSecretData
     {
         private static readonly string[] Scopes = { YouTubeService.Scope.Youtube };
-        private static readonly string ApplicationName = "YouTubeNotifier";
-
 
         [FunctionName("TestGetGoogleSecretData")]
         public static async Task<IActionResult> Run(

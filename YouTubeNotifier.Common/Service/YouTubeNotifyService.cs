@@ -33,7 +33,7 @@ namespace YouTubeNotifier.Common.Service
         public async Task Run(string categoryName)
         {
             log.Infomation("CreateYoutubeService");
-            youTubeService = await YoutubeServiceCreator.Create(config);
+            youTubeService = await YoutubeServiceCreator.Create(config.AzureTableStorageConnectionString);
 
             var fromDateTimeJst = config.FromDateTimeUtc.AddHours(9);
             log.Infomation($"fromDateTimeJst={fromDateTimeJst}");

@@ -11,14 +11,14 @@ using YouTubeNotifier.Common.Repository;
 
 namespace YouTubeNotifier.Common.Service
 {
-    static class YoutubeServiceCreator
+    public static class YoutubeServiceCreator
     {
         private static readonly string[] Scopes = { YouTubeService.Scope.Youtube };
         private static readonly string ApplicationName = "YouTubeNotifier";
 
-        public static async Task<YouTubeService> Create(YouTubeNotifyServiceConfig config)
+        public static async Task<YouTubeService> Create(string azureTableStorageConnectionString)
         {
-            var credential = await GetCredentialFromTableStoraeg(config);
+            var credential = await GetCredentialFromTableStoraeg(azureTableStorageConnectionString);
 
             return new YouTubeService(new BaseClientService.Initializer()
             {
@@ -27,9 +27,9 @@ namespace YouTubeNotifier.Common.Service
             });
         }
 
-        private static async Task<UserCredential> GetCredentialFromTableStoraeg(YouTubeNotifyServiceConfig config)
+        private static async Task<UserCredential> GetCredentialFromTableStoraeg(string azureTableStorageConnectionString)
         {
-            var cloudStorageAccountConnectionString = config.AzureTableStorageConnectionString;
+            var cloudStorageAccountConnectionString = azureTableStorageConnectionString;
 
             var secretStore = new TableStorageSecretStore(cloudStorageAccountConnectionString);
             var secretText = await secretStore.GetSecret();

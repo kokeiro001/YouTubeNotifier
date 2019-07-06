@@ -20,7 +20,9 @@ namespace YouTubeNotifier.VTuberRankingCrawler
             var settings = JsonConvert.DeserializeObject<Settings>(settingsJson);
 
             var vtuberRankingService = new VTuberRankingService(settings);
-            await vtuberRankingService.Run();
+            await vtuberRankingService.GetNewMovies();
+
+            await vtuberRankingService.GeneratePlaylistFromLatestMoviesJson();
         }
     }
 

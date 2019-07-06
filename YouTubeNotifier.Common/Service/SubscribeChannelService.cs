@@ -24,7 +24,7 @@ namespace YouTubeNotifier.Common.Service
         {
             var repository = new SubscriptionChannelRepository(config.AzureTableStorageConnectionString);
 
-            youTubeService = await YoutubeServiceCreator.Create(config);
+            youTubeService = await YoutubeServiceCreator.Create(config.AzureTableStorageConnectionString);
 
             var channelList = await GetSubscriptionYouTubeChannels(true);
 
@@ -73,7 +73,7 @@ namespace YouTubeNotifier.Common.Service
         {
             var repository = new SubscriptionChannelRepository(config.AzureTableStorageConnectionString);
 
-            youTubeService = await YoutubeServiceCreator.Create(config);
+            youTubeService = await YoutubeServiceCreator.Create(config.AzureTableStorageConnectionString);
 
             var channelIds = File.ReadAllLines(csvFilePath)
                 .Skip(1)
