@@ -9,13 +9,20 @@ namespace YouTubeNotifier.VTuberRankingCrawler
 {
     class YouTubeChannelRssCrawler
     {
+        private readonly Log4NetLogger log;
+
+        public YouTubeChannelRssCrawler(Log4NetLogger log)
+        {
+            this.log = log;
+        }
+
         public async Task<YouTubeRssItem[]> GetUploadedMovies(string[] youtubeChannelIds, DateTime fromUtc, DateTime toUtc)
         {
             var list = new List<YouTubeRssItem>();
 
             foreach (var youtubeChannelId in youtubeChannelIds.Take(300))
             {
-                Console.WriteLine($"GetRssItems({youtubeChannelId})");
+                log.Infomation($"GetRssItems({youtubeChannelId})");
 
                 var tmp = GetRssItems(youtubeChannelId);
 

@@ -8,17 +8,17 @@ namespace YouTubeNotifier.VTuberRankingCrawler
 {
     class YouTubeBlobService
     {
-        private readonly string azureStorageConnectionString;
+        private readonly BlobStorageClient vtuberInsightBlobStroage;
+        private readonly BlobStorageClient newMoviesBlobStorage;
 
         public YouTubeBlobService(string azureStorageConnectionString)
         {
-            this.azureStorageConnectionString = azureStorageConnectionString;
+            vtuberInsightBlobStroage = new BlobStorageClient(azureStorageConnectionString, "vtuberranking", "VTuberInsight");
+            newMoviesBlobStorage = new BlobStorageClient(azureStorageConnectionString, "vtuberranking", "NewMovies"); ;
         }
 
         public async Task UploadVTuberInsightCsvFile(YouTubeChannelRankingItem[] rankingItems)
         {
-            var blobStorageClient = new BlobStorageClient(azureStorageConnectionString, "vtuberranking", "VTuberInsight");
-
             var content = JsonConvert.SerializeObject(rankingItems, Formatting.Indented);
 
             var jst = DateTime.UtcNow.AddHours(9);
@@ -27,15 +27,13 @@ namespace YouTubeNotifier.VTuberRankingCrawler
 
             using (var memoryStream = content.ToMemoryStream())
             {
-                await blobStorageClient.UploadBlob(fileName, memoryStream);
+                await vtuberInsightBlobStroage.UploadBlob(fileName, memoryStream);
             }
         }
 
         public async Task<string> DownloadLatestVTuberInsightCsvFile()
         {
-            var blobStorageClient = new BlobStorageClient(azureStorageConnectionString, "vtuberranking", "VTuberInsight");
-
-            var files = await blobStorageClient.ListFiles();
+            var files = await vtuberInsightBlobStroage.ListFiles();
 
             var data = files.OrderByDescending(x => x.Name);
 
@@ -55,19 +53,16 @@ namespace YouTubeNotifier.VTuberRankingCrawler
             var fileName = $"{fromStr}-{toStr}_new_movies.json";
 
             var content = JsonConvert.SerializeObject(youtubeRssItems, Formatting.Indented);
-            var blobStorageClient = new BlobStorageClient(azureStorageConnectionString, "vtuberranking", "NewMovies");
 
             using (var memoryStream = content.ToMemoryStream())
             {
-                await blobStorageClient.UploadBlob(fileName, memoryStream);
+                await newMoviesBlobStorage.UploadBlob(fileName, memoryStream);
             }
         }
 
         public async Task<YouTubeRssItem[]> DownloadLatestYouTubeMovies()
         {
-            var blobStorageClient = new BlobStorageClient(azureStorageConnectionString, "vtuberranking", "NewMovies");
-
-            var files = await blobStorageClient.ListFiles();
+            var files = await newMoviesBlobStorage.ListFiles();
 
             var data = files.OrderByDescending(x => x.Name);
 

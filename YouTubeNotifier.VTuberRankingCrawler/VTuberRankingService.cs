@@ -4,29 +4,34 @@ using Newtonsoft.Json;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using YouTubeNotifier.Common.Service;
 
 namespace YouTubeNotifier.VTuberRankingCrawler
 {
     class VTuberRankingService
     {
-        private readonly string azureCloudStorageConnectionString;
+        private readonly YouTubeService youtubeService;
         private readonly YouTubeBlobService youtubeBlobService;
+        private readonly VTuberInsightCrawler vtuberInsightCrawler;
+        private readonly YouTubeChannelRssCrawler youtubeChannelRssCrawler;
         private readonly Log4NetLogger log;
 
-        public VTuberRankingService(Settings settings)
+        public VTuberRankingService(
+            YouTubeService youtubeService,
+            YouTubeBlobService youtubeBlobService,
+            VTuberInsightCrawler vtuberInsightCrawler,
+            YouTubeChannelRssCrawler youtubeChannelRssCrawler,
+            Log4NetLogger log)
         {
-            azureCloudStorageConnectionString = settings.AzureCloudStorageConnectionString;
-            youtubeBlobService = new YouTubeBlobService(azureCloudStorageConnectionString);
-
-            log = Log4NetLogger.Create();
+            this.youtubeService = youtubeService;
+            this.youtubeBlobService = youtubeBlobService;
+            this.vtuberInsightCrawler = vtuberInsightCrawler;
+            this.youtubeChannelRssCrawler = youtubeChannelRssCrawler;
+            this.log = log;
         }
 
         public async Task GetNewMovies()
         {
             log.Infomation("GetNewMovies");
-
-            var vtuberInsightCrawler = new VTuberInsightCrawler();
 
             log.Infomation("vtuberInsightCrawler.Run()");
 
@@ -54,7 +59,6 @@ namespace YouTubeNotifier.VTuberRankingCrawler
             var content = await youtubeBlobService.DownloadLatestVTuberInsightCsvFile();
             var rankingItems = JsonConvert.DeserializeObject<YouTubeChannelRankingItem[]>(content);
 
-            var youtubeChannelRssCrawler = new YouTubeChannelRssCrawler();
             var youtubeChannelIds = rankingItems.Select(x => x.ChannelId).ToArray();
 
             return await youtubeChannelRssCrawler.GetUploadedMovies(youtubeChannelIds, fromUtc, toUtc);
@@ -65,12 +69,10 @@ namespace YouTubeNotifier.VTuberRankingCrawler
         /// <returns>PlaylistId</returns>
         public async Task<(string playlistId, string playlistTitle, int videoCount)> GeneratePlaylistFromLatestMoviesJson()
         {
-            var youTubeService = await YoutubeServiceCreator.Create(azureCloudStorageConnectionString);
-
             var fromDateTimeJst = DateTime.UtcNow.AddHours(9).Date.AddDays(-1).AddHours(-9);
             var titleJst = DateTime.UtcNow.AddHours(9).Date.AddDays(-1);
             log.Infomation($"GetOrInsertPlaylist(youTubeService, {fromDateTimeJst})");
-            var (playlist, videoCount) = await GetOrInsertPlaylist(youTubeService, titleJst);
+            var (playlist, videoCount) = await GetOrInsertPlaylist(youtubeService, titleJst);
 
             log.Infomation("GeneratePlaylistFromLatestMoviesJson");
             var newMovies = await youtubeBlobService.DownloadLatestYouTubeMovies();
@@ -81,7 +83,7 @@ namespace YouTubeNotifier.VTuberRankingCrawler
             {
                 try
                 {
-                    var insertPlaylistItemRequest = youTubeService.PlaylistItems.Insert(new PlaylistItem
+                    var insertPlaylistItemRequest = youtubeService.PlaylistItems.Insert(new PlaylistItem
                     {
                         Snippet = new PlaylistItemSnippet
                         {

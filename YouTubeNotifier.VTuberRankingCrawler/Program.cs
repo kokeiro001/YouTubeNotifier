@@ -1,5 +1,4 @@
-﻿using Newtonsoft.Json;
-using System.IO;
+﻿using Microsoft.Extensions.DependencyInjection;
 using System.Threading.Tasks;
 
 namespace YouTubeNotifier.VTuberRankingCrawler
@@ -23,16 +22,15 @@ namespace YouTubeNotifier.VTuberRankingCrawler
     {
         static async Task Main()
         {
-            var settingsJson = File.ReadAllText(@"settings.json");
-            var settings = JsonConvert.DeserializeObject<Settings>(settingsJson);
+            var serviceProvider = await ServiceProviderCreator.Create();
 
-            var vtuberRankingService = new VTuberRankingService(settings);
+            var vtuberRankingService = serviceProvider.GetService<VTuberRankingService>();
 
             await vtuberRankingService.GetNewMovies();
 
             var (playlistId, playlistTitle, videoCount) = await vtuberRankingService.GeneratePlaylistFromLatestMoviesJson();
 
-            var twitterService = new TwitterService(settings);
+            var twitterService = serviceProvider.GetService<TwitterService>();
 
             await twitterService.TweetGeneratedPlaylist(playlistId, playlistTitle, videoCount);
         }
