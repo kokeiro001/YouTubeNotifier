@@ -68,7 +68,6 @@ namespace YouTubeNotifier.VTuberRankingCrawler
         }
     }
 
-
     class YouTubeRssItem
     {
         public string Url { get; set; }

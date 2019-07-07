@@ -3,9 +3,7 @@ using Microsoft.WindowsAzure.Storage.Blob;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using YouTubeNotifier.Common;
 
 namespace YouTubeNotifier.VTuberRankingCrawler
 {
@@ -50,17 +48,6 @@ namespace YouTubeNotifier.VTuberRankingCrawler
             while (token != null);
 
             return list.ToArray();
-        }
-
-        public async Task<string> GetString(string name)
-        {
-            var blob = blobDirectory.GetBlobReference(name);
-            using (var memoryStream = new MemoryStream())
-            {
-                await blob.DownloadToStreamAsync(memoryStream);
-
-                return memoryStream.ToStringWithEncoding(Encoding.UTF8);
-            }
         }
     }
 }
