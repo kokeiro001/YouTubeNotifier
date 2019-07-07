@@ -1,6 +1,4 @@
 ﻿using CoreTweet;
-using System;
-using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -26,7 +24,7 @@ namespace YouTubeNotifier.VTuberRankingCrawler
 
             var stringBuilder = new StringBuilder();
 
-            stringBuilder.AppendLine($"{playlistTitle} ({videoCount}件登録済み)");
+            stringBuilder.AppendLine($"{playlistTitle}に投稿/公開されたバーチャルYouTuberの動画/生放送を再生リストにまとめました。({videoCount}件登録済み)");
 
             stringBuilder.AppendLine("");
             stringBuilder.Append(playlistUrl);

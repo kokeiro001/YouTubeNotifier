@@ -112,7 +112,7 @@ namespace YouTubeNotifier.VTuberRankingCrawler
         {
             var pageToken = default(string);
 
-            var playlistTitle = titleJst.ToString("yyyy年M月dd日");
+            var playlistTitle = titleJst.ToString("yyyy年M月dd日") + "のVTuber動画・生放送";
 
             log.Infomation($"GetOrInsertPlaylist playlistTitle={playlistTitle}");
 
@@ -136,7 +136,7 @@ namespace YouTubeNotifier.VTuberRankingCrawler
 
                 if (playlist != null)
                 {
-                    int playlistItemsCount = await GetPlaylistItemsCount(youTubeService, listPlaylistResponse, playlist);
+                    int playlistItemsCount = await GetPlaylistItemsCount(youTubeService, playlist);
 
                     return (playlist, playlistItemsCount);
                 }
@@ -165,7 +165,7 @@ namespace YouTubeNotifier.VTuberRankingCrawler
                 },
             }, "snippet,status");
 
-            insertPlaylistRequest.Fields = "id";
+            insertPlaylistRequest.Fields = "id,snippet/title";
 
             log.Infomation("insertPlaylistRequest.ExecuteAsync");
             var insertPlaylistResponse = await insertPlaylistRequest.ExecuteAsync();
@@ -173,14 +173,15 @@ namespace YouTubeNotifier.VTuberRankingCrawler
             return (insertPlaylistResponse, 0);
         }
 
-        private static async Task<int> GetPlaylistItemsCount(YouTubeService youTubeService, PlaylistListResponse listPlaylistResponse, Playlist playlist)
+        private static async Task<int> GetPlaylistItemsCount(YouTubeService youTubeService, Playlist playlist)
         {
             var playlistItemsCount = 0;
-            string pageToken;
+            var pageToken = default(string);
 
             do
             {
                 var playlistItemsRequest = youTubeService.PlaylistItems.List("id");
+                playlistItemsRequest.PageToken = pageToken;
                 playlistItemsRequest.PlaylistId = playlist.Id;
                 playlistItemsRequest.MaxResults = 50;
 
@@ -188,7 +189,7 @@ namespace YouTubeNotifier.VTuberRankingCrawler
 
                 playlistItemsCount += playlistItemsResponse.Items.Count;
 
-                pageToken = listPlaylistResponse.NextPageToken;
+                pageToken = playlistItemsResponse.NextPageToken;
 
             } while (!string.IsNullOrEmpty(pageToken));
             return playlistItemsCount;
