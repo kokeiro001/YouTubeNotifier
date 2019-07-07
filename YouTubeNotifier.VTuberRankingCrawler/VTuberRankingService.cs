@@ -18,7 +18,7 @@ namespace YouTubeNotifier.VTuberRankingCrawler
         public VTuberRankingService(Settings settings)
         {
             azureCloudStorageConnectionString = settings.AzureCloudStorageConnectionString;
-            youtubeBlobService = new YouTubeBlobService(settings.AzureCloudStorageConnectionString);
+            youtubeBlobService = new YouTubeBlobService(azureCloudStorageConnectionString);
         }
 
         public async Task GetNewMovies()
@@ -29,7 +29,7 @@ namespace YouTubeNotifier.VTuberRankingCrawler
 
             foreach (var rankingItem in rankingItems)
             {
-                Console.WriteLine($"{rankingItem.Rank:D3} {rankingItem.ChannelName} {rankingItem.ChannelId}");
+                log.Infomation($"{rankingItem.Rank:D3} {rankingItem.ChannelName} {rankingItem.ChannelId}");
             }
 
             await youtubeBlobService.UploadVTuberInsightCsvFile(rankingItems);
@@ -55,12 +55,16 @@ namespace YouTubeNotifier.VTuberRankingCrawler
 
         public async Task GeneratePlaylistFromLatestMoviesJson()
         {
+            log.Infomation("GeneratePlaylistFromLatestMoviesJson");
+
             var newMovies = await youtubeBlobService.DownloadLatestYouTubeMovies();
+
+            log.Infomation($"newMovies.Length={newMovies.Length}");
 
             var youTubeService = await YoutubeServiceCreator.Create(azureCloudStorageConnectionString);
 
             var fromDateTimeJst = DateTime.UtcNow.AddHours(9).Date.AddDays(-1).AddHours(-9);
-            log.Infomation($"GetOrInsertPlaylist({fromDateTimeJst})");
+            log.Infomation($"GetOrInsertPlaylist(youTubeService, {fromDateTimeJst})");
             var insertPlaylistResponse = await GetOrInsertPlaylist(youTubeService, fromDateTimeJst);
 
             log.Infomation($"Insert Movies");
@@ -92,6 +96,8 @@ namespace YouTubeNotifier.VTuberRankingCrawler
 
             var playlistTitle = fromDateTimeJst.ToString("yyyy年M月dd日");
 
+            log.Infomation($"GetOrInsertPlaylist playlistTitle={playlistTitle}");
+
             var page = 0;
             var maxPage = 1;
 
@@ -119,10 +125,13 @@ namespace YouTubeNotifier.VTuberRankingCrawler
                 page++;
 
                 log.Infomation($"listPlaylistResponse.NextPageToken={pageToken}, page={page}");
-                log.Infomation($")!string.IsNullOrEmpty({pageToken}) && {page} <= {maxPage}) == {!string.IsNullOrEmpty(pageToken) && page <= maxPage}");
+                log.Infomation($"!string.IsNullOrEmpty({pageToken}) && {page} <= {maxPage}) == {!string.IsNullOrEmpty(pageToken) && page <= maxPage}");
             } while (!string.IsNullOrEmpty(pageToken) && page <= maxPage);
 
             // not found playlist. insert playlist.
+            log.Infomation($"NotFound playlistTitle={playlistTitle}");
+
+            log.Infomation($"InsertPlayList {playlistTitle}");
 
             var insertPlaylistRequest = youTubeService.Playlists.Insert(new Playlist
             {
