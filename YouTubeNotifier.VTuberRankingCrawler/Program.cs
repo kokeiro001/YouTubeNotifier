@@ -1,6 +1,5 @@
 ﻿using Newtonsoft.Json;
 using System.IO;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace YouTubeNotifier.VTuberRankingCrawler
@@ -18,6 +17,7 @@ namespace YouTubeNotifier.VTuberRankingCrawler
             var settings = JsonConvert.DeserializeObject<Settings>(settingsJson);
 
             var vtuberRankingService = new VTuberRankingService(settings);
+
             await vtuberRankingService.GetNewMovies();
 
             await vtuberRankingService.GeneratePlaylistFromLatestMoviesJson();

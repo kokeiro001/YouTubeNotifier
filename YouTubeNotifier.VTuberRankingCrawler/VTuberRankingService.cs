@@ -4,7 +4,6 @@ using Newtonsoft.Json;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using YouTubeNotifier.Common;
 using YouTubeNotifier.Common.Service;
 
 namespace YouTubeNotifier.VTuberRankingCrawler
@@ -13,12 +12,14 @@ namespace YouTubeNotifier.VTuberRankingCrawler
     {
         private readonly string azureCloudStorageConnectionString;
         private readonly YouTubeBlobService youtubeBlobService;
-        private readonly IMyLogger log = new ConsoleLogger();
+        private readonly Log4NetLogger log;
 
         public VTuberRankingService(Settings settings)
         {
             azureCloudStorageConnectionString = settings.AzureCloudStorageConnectionString;
             youtubeBlobService = new YouTubeBlobService(azureCloudStorageConnectionString);
+
+            log = Log4NetLogger.Create();
         }
 
         public async Task GetNewMovies()
@@ -151,14 +152,5 @@ namespace YouTubeNotifier.VTuberRankingCrawler
             var insertPlaylistResponse = await insertPlaylistRequest.ExecuteAsync();
             return insertPlaylistResponse;
         }
-    }
-
-    class ConsoleLogger : IMyLogger
-    {
-        public void Infomation(string message) => Console.WriteLine($"Infomation {message}");
-
-        public void Warning(string message) => Console.WriteLine($"Warning {message}");
-
-        public void Error(string message) => Console.WriteLine($"Error {message}");
     }
 }

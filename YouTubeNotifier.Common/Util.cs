@@ -1,6 +1,8 @@
 ﻿using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -64,6 +66,11 @@ namespace YouTubeNotifier.Common
 
                 return data;
             }
+        }
+
+        public static string JoinString(this IEnumerable<string> source, string separator)
+        {
+            return string.Join(separator, source.ToArray());
         }
     }
 
