@@ -1,3 +1,9 @@
 {
-    "AzureCloudStorageConnectionString": ""
+  "AzureCloudStorageConnectionString": "",
+  "Twitter": {
+    "ApiKey": "",
+    "ApiSecret": "",
+    "AccessToken": "",
+    "AccessTokenSecret": ""
+  }
 }
