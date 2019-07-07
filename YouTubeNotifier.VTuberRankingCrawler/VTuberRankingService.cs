@@ -24,9 +24,15 @@ namespace YouTubeNotifier.VTuberRankingCrawler
 
         public async Task GetNewMovies()
         {
+            log.Infomation("GetNewMovies");
+
             var vtuberInsightCrawler = new VTuberInsightCrawler();
 
+            log.Infomation("vtuberInsightCrawler.Run()");
+
             var rankingItems = await vtuberInsightCrawler.Run();
+
+            log.Infomation($"rankingItems.Length={rankingItems.Length}");
 
             foreach (var rankingItem in rankingItems)
             {
