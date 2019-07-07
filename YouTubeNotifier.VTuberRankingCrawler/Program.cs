@@ -7,6 +7,16 @@ namespace YouTubeNotifier.VTuberRankingCrawler
     public class Settings
     {
         public string AzureCloudStorageConnectionString { get; set; }
+
+        public TwitterSettings Twitter { get; set; }
+
+        public class TwitterSettings
+        {
+            public string ApiKey { get; set; }
+            public string ApiSecret { get; set; }
+            public string AccessToken { get; set; }
+            public string AccessTokenSecret { get; set; }
+        }
     }
 
     class Program
@@ -20,7 +30,11 @@ namespace YouTubeNotifier.VTuberRankingCrawler
 
             await vtuberRankingService.GetNewMovies();
 
-            await vtuberRankingService.GeneratePlaylistFromLatestMoviesJson();
+            var (playlistId, playlistTitle, videoCount) = await vtuberRankingService.GeneratePlaylistFromLatestMoviesJson();
+
+            var twitterService = new TwitterService(settings);
+
+            await twitterService.TweetGeneratedPlaylist(playlistId, playlistTitle, videoCount);
         }
     }
 }

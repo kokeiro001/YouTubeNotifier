@@ -44,11 +44,15 @@ namespace YouTubeNotifier.VTuberRankingCrawler
             return await latestFile.DownloadTextAsync();
         }
 
-        public async Task UploadLatestYouTubeMovies(YouTubeRssItem[] youtubeRssItems)
+        public async Task UploadLatestYouTubeMovies(DateTime fromUtc, DateTime toUtc, YouTubeRssItem[] youtubeRssItems)
         {
-            var jst = DateTime.UtcNow.AddHours(9);
+            var fromJst = fromUtc.AddHours(9);
+            var toJst = toUtc.AddHours(9);
 
-            var fileName = jst.ToString("yyyyMMdd_HHmmss") + "_jst_new_movies.json";
+            var fromStr = fromJst.ToString("yyyyMMdd_HHmmss") + "_jst";
+            var toStr = toJst.ToString("yyyyMMdd_HHmmss") + "_jst";
+
+            var fileName = $"{fromStr}-{toStr}_new_movies.json";
 
             var content = JsonConvert.SerializeObject(youtubeRssItems, Formatting.Indented);
             var blobStorageClient = new BlobStorageClient(azureStorageConnectionString, "vtuberranking", "NewMovies");

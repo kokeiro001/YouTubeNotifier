@@ -46,7 +46,7 @@ namespace YouTubeNotifier.VTuberRankingCrawler
 
             var latestYouYubeRssItems = await GetMovieIds(fromUtc, toUtc);
 
-            await youtubeBlobService.UploadLatestYouTubeMovies(latestYouYubeRssItems);
+            await youtubeBlobService.UploadLatestYouTubeMovies(fromUtc, toUtc, latestYouYubeRssItems);
         }
 
         private async Task<YouTubeRssItem[]> GetMovieIds(DateTime fromUtc, DateTime toUtc)
@@ -60,48 +60,59 @@ namespace YouTubeNotifier.VTuberRankingCrawler
             return await youtubeChannelRssCrawler.GetUploadedMovies(youtubeChannelIds, fromUtc, toUtc);
         }
 
-        public async Task GeneratePlaylistFromLatestMoviesJson()
+        /// <summary>
+        /// </summary>
+        /// <returns>PlaylistId</returns>
+        public async Task<(string playlistId, string playlistTitle, int videoCount)> GeneratePlaylistFromLatestMoviesJson()
         {
-            log.Infomation("GeneratePlaylistFromLatestMoviesJson");
-
-            var newMovies = await youtubeBlobService.DownloadLatestYouTubeMovies();
-
-            log.Infomation($"newMovies.Length={newMovies.Length}");
-
             var youTubeService = await YoutubeServiceCreator.Create(azureCloudStorageConnectionString);
 
             var fromDateTimeJst = DateTime.UtcNow.AddHours(9).Date.AddDays(-1).AddHours(-9);
+            var titleJst = DateTime.UtcNow.AddHours(9).Date.AddDays(-1);
             log.Infomation($"GetOrInsertPlaylist(youTubeService, {fromDateTimeJst})");
-            var insertPlaylistResponse = await GetOrInsertPlaylist(youTubeService, fromDateTimeJst);
+            var (playlist, videoCount) = await GetOrInsertPlaylist(youTubeService, titleJst);
+
+            log.Infomation("GeneratePlaylistFromLatestMoviesJson");
+            var newMovies = await youtubeBlobService.DownloadLatestYouTubeMovies();
+            log.Infomation($"newMovies.Length={newMovies.Length}");
 
             log.Infomation($"Insert Movies");
             foreach (var movie in newMovies)
             {
-                var insertPlaylistItemRequest = youTubeService.PlaylistItems.Insert(new PlaylistItem
+                try
                 {
-                    Snippet = new PlaylistItemSnippet
+                    var insertPlaylistItemRequest = youTubeService.PlaylistItems.Insert(new PlaylistItem
                     {
-                        PlaylistId = insertPlaylistResponse.Id,
-                        ResourceId = new ResourceId
+                        Snippet = new PlaylistItemSnippet
                         {
-                            Kind = "youtube#video",
-                            VideoId = movie.MovieId,
-                        }
-                    },
-                }, "snippet");
+                            PlaylistId = playlist.Id,
+                            ResourceId = new ResourceId
+                            {
+                                Kind = "youtube#video",
+                                VideoId = movie.MovieId,
+                            }
+                        },
+                    }, "snippet");
 
-                insertPlaylistItemRequest.Fields = "";
-                log.Infomation($"insertPlaylistItemRequest VideoId={movie.MovieId}");
+                    insertPlaylistItemRequest.Fields = "";
+                    log.Infomation($"insertPlaylistItemRequest VideoId={movie.MovieId}");
 
-                await insertPlaylistItemRequest.ExecuteAsync();
+                    await insertPlaylistItemRequest.ExecuteAsync();
+                }
+                catch (Exception e)
+                {
+                    log.Error(e.Message, e);
+                }
             }
+
+            return (playlist.Id, playlist.Snippet.Title, videoCount);
         }
 
-        private async Task<Playlist> GetOrInsertPlaylist(YouTubeService youTubeService, DateTime fromDateTimeJst)
+        private async Task<(Playlist playlist, int videoCount)> GetOrInsertPlaylist(YouTubeService youTubeService, DateTime titleJst)
         {
             var pageToken = default(string);
 
-            var playlistTitle = fromDateTimeJst.ToString("yyyy年M月dd日");
+            var playlistTitle = titleJst.ToString("yyyy年M月dd日");
 
             log.Infomation($"GetOrInsertPlaylist playlistTitle={playlistTitle}");
 
@@ -125,7 +136,9 @@ namespace YouTubeNotifier.VTuberRankingCrawler
 
                 if (playlist != null)
                 {
-                    return playlist;
+                    int playlistItemsCount = await GetPlaylistItemsCount(youTubeService, listPlaylistResponse, playlist);
+
+                    return (playlist, playlistItemsCount);
                 }
 
                 pageToken = listPlaylistResponse.NextPageToken;
@@ -148,7 +161,7 @@ namespace YouTubeNotifier.VTuberRankingCrawler
                 },
                 Status = new PlaylistStatus
                 {
-                    PrivacyStatus = "unlisted",
+                    PrivacyStatus = "public",
                 },
             }, "snippet,status");
 
@@ -156,7 +169,29 @@ namespace YouTubeNotifier.VTuberRankingCrawler
 
             log.Infomation("insertPlaylistRequest.ExecuteAsync");
             var insertPlaylistResponse = await insertPlaylistRequest.ExecuteAsync();
-            return insertPlaylistResponse;
+
+            return (insertPlaylistResponse, 0);
+        }
+
+        private static async Task<int> GetPlaylistItemsCount(YouTubeService youTubeService, PlaylistListResponse listPlaylistResponse, Playlist playlist)
+        {
+            var playlistItemsCount = 0;
+            string pageToken;
+
+            do
+            {
+                var playlistItemsRequest = youTubeService.PlaylistItems.List("id");
+                playlistItemsRequest.PlaylistId = playlist.Id;
+                playlistItemsRequest.MaxResults = 50;
+
+                var playlistItemsResponse = await playlistItemsRequest.ExecuteAsync();
+
+                playlistItemsCount += playlistItemsResponse.Items.Count;
+
+                pageToken = listPlaylistResponse.NextPageToken;
+
+            } while (!string.IsNullOrEmpty(pageToken));
+            return playlistItemsCount;
         }
     }
 }
