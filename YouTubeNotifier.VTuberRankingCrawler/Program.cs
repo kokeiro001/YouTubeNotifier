@@ -23,7 +23,7 @@ namespace YouTubeNotifier.VTuberRankingCrawler
         static async Task Main()
         {
             var serviceProvider = await ServiceProviderCreator.Create();
-
+            
             var vtuberRankingService = serviceProvider.GetService<VTuberRankingService>();
 
             await vtuberRankingService.GetNewMovies();

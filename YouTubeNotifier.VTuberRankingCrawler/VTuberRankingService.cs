@@ -39,11 +39,11 @@ namespace YouTubeNotifier.VTuberRankingCrawler
 
             log.Infomation($"rankingItems.Length={rankingItems.Length}");
 
-            foreach (var rankingItem in rankingItems)
-            {
-                log.Infomation($"{rankingItem.Rank:D3} {rankingItem.ChannelName} {rankingItem.ChannelId}");
-            }
-
+            //foreach (var rankingItem in rankingItems)
+            //{
+            //    log.Infomation($"{rankingItem.Rank:D3} {rankingItem.ChannelName} {rankingItem.ChannelId}");
+            //}
+            
             await youtubeBlobService.UploadVTuberInsightCsvFile(rankingItems);
 
             var fromUtc = DateTime.UtcNow.AddHours(9).Date.AddDays(-1).AddHours(-9);
@@ -71,7 +71,7 @@ namespace YouTubeNotifier.VTuberRankingCrawler
         {
             var fromDateTimeJst = DateTime.UtcNow.AddHours(9).Date.AddDays(-1).AddHours(-9);
             var titleJst = DateTime.UtcNow.AddHours(9).Date.AddDays(-1);
-            log.Infomation($"GetOrInsertPlaylist(youTubeService, {fromDateTimeJst})");
+            log.Infomation($"GetOrInsertPlaylist(youTubeService, {titleJst})");
             var (playlist, videoCount) = await GetOrInsertPlaylist(youtubeService, titleJst);
 
             log.Infomation("GeneratePlaylistFromLatestMoviesJson");
