@@ -16,13 +16,19 @@ namespace YouTubeNotifier.VTuberRankingCrawler
             this.log = log;
         }
 
-        public async Task<YouTubeRssItem[]> GetUploadedMovies(string[] youtubeChannelIds, DateTime fromUtc, DateTime toUtc)
+        public async Task<YouTubeRssItem[]> GetUploadedMoviesFromRss(string[] youtubeChannelIds, DateTime fromUtc, DateTime toUtc)
         {
+            log.Infomation($"GetUploadedMoviesFromRss(youtubeChannelIds, fromUtc:{fromUtc}, toUtc:{toUtc})");
+
             var list = new List<YouTubeRssItem>();
 
+            var count = 0;
             foreach (var youtubeChannelId in youtubeChannelIds.Take(300))
             {
-                log.Infomation($"GetRssItems({youtubeChannelId})");
+                if (count++ % 10 == 0)
+                {
+                    log.Infomation($"** count={count} GetRssItems");
+                }
 
                 var tmp = GetRssItems(youtubeChannelId);
 

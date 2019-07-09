@@ -50,19 +50,21 @@ namespace YouTubeNotifier.VTuberRankingCrawler
             var fromUtc = DateTime.UtcNow.AddHours(9).Date.AddDays(-1).AddHours(-9);
             var toUtc = fromUtc.AddDays(1);
 
-            var latestYouYubeRssItems = await GetMovieIds(fromUtc, toUtc);
+            var latestYouYubeRssItems = await GetMovieIdsFromRss(fromUtc, toUtc);
 
             await youtubeBlobService.UploadLatestYouTubeMovies(fromUtc, toUtc, latestYouYubeRssItems);
         }
 
-        private async Task<YouTubeRssItem[]> GetMovieIds(DateTime fromUtc, DateTime toUtc)
+        private async Task<YouTubeRssItem[]> GetMovieIdsFromRss(DateTime fromUtc, DateTime toUtc)
         {
+            log.Infomation($"GetMovieIdsFromRss(fromUtc:{fromUtc}, toUtc:{toUtc})");
+
             var content = await youtubeBlobService.DownloadLatestVTuberInsightCsvFile();
             var rankingItems = JsonConvert.DeserializeObject<YouTubeChannelRankingItem[]>(content);
 
             var youtubeChannelIds = rankingItems.Select(x => x.ChannelId).ToArray();
 
-            return await youtubeChannelRssCrawler.GetUploadedMovies(youtubeChannelIds, fromUtc, toUtc);
+            return await youtubeChannelRssCrawler.GetUploadedMoviesFromRss(youtubeChannelIds, fromUtc, toUtc);
         }
 
         /// <summary>
