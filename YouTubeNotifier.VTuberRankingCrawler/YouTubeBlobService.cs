@@ -60,7 +60,7 @@ namespace YouTubeNotifier.VTuberRankingCrawler
             }
         }
 
-        public async Task<YouTubeRssItem[]> DownloadLatestYouTubeMovies()
+        public async Task<YouTubeRssItem[]> DownloadLatestYouTubeVideos()
         {
             var files = await newMoviesBlobStorage.ListFiles();
 

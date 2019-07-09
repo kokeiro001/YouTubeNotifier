@@ -2,6 +2,7 @@
 using Google.Apis.YouTube.v3.Data;
 using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -69,18 +70,24 @@ namespace YouTubeNotifier.VTuberRankingCrawler
         /// <returns>PlaylistId</returns>
         public async Task<(string playlistId, string playlistTitle, int videoCount)> GeneratePlaylistFromLatestMoviesJson()
         {
-            var fromDateTimeJst = DateTime.UtcNow.AddHours(9).Date.AddDays(-1).AddHours(-9);
             var titleJst = DateTime.UtcNow.AddHours(9).Date.AddDays(-1);
             log.Infomation($"GetOrInsertPlaylist(youTubeService, {titleJst})");
-            var (playlist, videoCount) = await GetOrInsertPlaylist(youtubeService, titleJst);
+            var (playlist, videoIds) = await GetOrInsertPlaylist(youtubeService, titleJst);
 
             log.Infomation("GeneratePlaylistFromLatestMoviesJson");
-            var newMovies = await youtubeBlobService.DownloadLatestYouTubeMovies();
-            log.Infomation($"newMovies.Length={newMovies.Length}");
+            var newVideos = await youtubeBlobService.DownloadLatestYouTubeVideos();
+            log.Infomation($"newMovies.Length={newVideos.Length}");
+
+            var videoCount = videoIds.Count;
 
             log.Infomation($"Insert Movies");
-            foreach (var movie in newMovies)
+            foreach (var newVideo in newVideos)
             {
+                if (videoIds.Contains(newVideo.VideoId))
+                {
+                    continue;
+                }
+                
                 try
                 {
                     var insertPlaylistItemRequest = youtubeService.PlaylistItems.Insert(new PlaylistItem
@@ -91,15 +98,17 @@ namespace YouTubeNotifier.VTuberRankingCrawler
                             ResourceId = new ResourceId
                             {
                                 Kind = "youtube#video",
-                                VideoId = movie.MovieId,
+                                VideoId = newVideo.VideoId,
                             }
                         },
                     }, "snippet");
 
                     insertPlaylistItemRequest.Fields = "";
-                    log.Infomation($"insertPlaylistItemRequest VideoId={movie.MovieId}");
+                    log.Infomation($"insertPlaylistItemRequest VideoId={newVideo.VideoId}");
 
                     await insertPlaylistItemRequest.ExecuteAsync();
+
+                    videoCount++;
                 }
                 catch (Exception e)
                 {
@@ -110,7 +119,7 @@ namespace YouTubeNotifier.VTuberRankingCrawler
             return (playlist.Id, playlist.Snippet.Title, videoCount);
         }
 
-        private async Task<(Playlist playlist, int videoCount)> GetOrInsertPlaylist(YouTubeService youTubeService, DateTime titleJst)
+        private async Task<(Playlist playlist, List<string> videoIds)> GetOrInsertPlaylist(YouTubeService youTubeService, DateTime titleJst)
         {
             var pageToken = default(string);
 
@@ -138,9 +147,9 @@ namespace YouTubeNotifier.VTuberRankingCrawler
 
                 if (playlist != null)
                 {
-                    int playlistItemsCount = await GetPlaylistItemsCount(youTubeService, playlist);
+                    var videoIds = await GetPlaylistItemsCount(youTubeService, playlist);
 
-                    return (playlist, playlistItemsCount);
+                    return (playlist, videoIds);
                 }
 
                 pageToken = listPlaylistResponse.NextPageToken;
@@ -172,29 +181,34 @@ namespace YouTubeNotifier.VTuberRankingCrawler
             log.Infomation("insertPlaylistRequest.ExecuteAsync");
             var insertPlaylistResponse = await insertPlaylistRequest.ExecuteAsync();
 
-            return (insertPlaylistResponse, 0);
+            return (insertPlaylistResponse, new List<string>());
         }
 
-        private static async Task<int> GetPlaylistItemsCount(YouTubeService youTubeService, Playlist playlist)
+        private static async Task<List<string>> GetPlaylistItemsCount(YouTubeService youTubeService, Playlist playlist)
         {
-            var playlistItemsCount = 0;
             var pageToken = default(string);
+
+            var list = new List<string>();
 
             do
             {
-                var playlistItemsRequest = youTubeService.PlaylistItems.List("id");
+                var playlistItemsRequest = youTubeService.PlaylistItems.List("snippet");
+                playlistItemsRequest.Fields = "items/snippet/id";
                 playlistItemsRequest.PageToken = pageToken;
                 playlistItemsRequest.PlaylistId = playlist.Id;
                 playlistItemsRequest.MaxResults = 50;
 
                 var playlistItemsResponse = await playlistItemsRequest.ExecuteAsync();
 
-                playlistItemsCount += playlistItemsResponse.Items.Count;
+                var videoIds = playlistItemsResponse.Items.Select(x => x.Id);
+
+                list.AddRange(videoIds);
 
                 pageToken = playlistItemsResponse.NextPageToken;
 
             } while (!string.IsNullOrEmpty(pageToken));
-            return playlistItemsCount;
+
+            return list;
         }
     }
 }

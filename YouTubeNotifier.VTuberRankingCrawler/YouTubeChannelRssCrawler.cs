@@ -55,7 +55,7 @@ namespace YouTubeNotifier.VTuberRankingCrawler
                     var youtubeRssItem = new YouTubeRssItem
                     {
                         Url = movieUri.ToString(),
-                        MovieId = movieId,
+                        VideoId = movieId,
                         Title = item.Title.Text,
                         PublishDateUtc = item.PublishDate.DateTime,
                     };
@@ -72,7 +72,7 @@ namespace YouTubeNotifier.VTuberRankingCrawler
     {
         public string Url { get; set; }
 
-        public string MovieId { get; set; }
+        public string VideoId { get; set; }
 
         public string Title { get; set; }
 
