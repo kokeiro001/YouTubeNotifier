@@ -2,7 +2,7 @@ version: '3.4'
 
 services:
   youtubenotifier:
-    image: kokeiro001/youtubenotifier:1.3
+    image: kokeiro001/youtubenotifier:1.4
     build:
       context: .
       dockerfile: YouTubeNotifier/Dockerfile
