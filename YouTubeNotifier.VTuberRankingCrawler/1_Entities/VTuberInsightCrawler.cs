@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using YouTubeNotifier.VTuberRankingCrawler.Common;
 
 namespace YouTubeNotifier.VTuberRankingCrawler.Entities
 {
@@ -18,6 +19,13 @@ namespace YouTubeNotifier.VTuberRankingCrawler.Entities
 
     class VTuberInsightCrawler
     {
+        private readonly Log4NetLogger log;
+
+        public VTuberInsightCrawler(Log4NetLogger log)
+        {
+            this.log = log;
+        }
+
         public async Task<YouTubeChannelRankingItem[]> Run()
         {
             var retryCount = 0;
@@ -31,11 +39,11 @@ namespace YouTubeNotifier.VTuberRankingCrawler.Entities
 
                     var html = await GetPageSource();
 
-                    Console.WriteLine("** Begin Parse");
+                    log.Infomation("** Begin Parse");
 
                     var rankingItems = Parse(html).ToArray();
 
-                    Console.WriteLine($"** rankingItems.Length={rankingItems.Length}");
+                    log.Infomation($"** rankingItems.Length={rankingItems.Length}");
 
                     if (rankingItems.Length > 0)
                     {
@@ -44,15 +52,15 @@ namespace YouTubeNotifier.VTuberRankingCrawler.Entities
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine($"** e.Message={e.Message}");
-                    Console.WriteLine($"** e.StackTrace={e.StackTrace}");
+                    log.Error($"** e.Message={e.Message}");
+                    log.Error($"** e.StackTrace={e.StackTrace}");
                     if (retryCount >= maxRetryCount)
                     {
                         throw;
                     }
                 }
 
-                Console.WriteLine($"** failed GetRankingItems. retryCount={retryCount}");
+                log.Error($"** failed GetRankingItems. retryCount={retryCount}");
                 await Task.Delay(TimeSpan.FromSeconds(5));
             }
             while (retryCount < maxRetryCount);
@@ -105,27 +113,27 @@ namespace YouTubeNotifier.VTuberRankingCrawler.Entities
             options.AddArguments("--blink-settings=imagesEnabled=false");
             options.BinaryLocation = "/opt/google/chrome/chrome";
 
-            Console.WriteLine("** BeginCreate ChromeDriver");
+            log.Infomation("** BeginCreate ChromeDriver");
             using (var service = ChromeDriverService.CreateDefaultService(driverPath, driverExecutableFileName))
             using (var driver = new ChromeDriver(service, options, TimeSpan.FromSeconds(60)))
             {
-                Console.WriteLine("** Created ChromeDriver");
+                log.Infomation("** Created ChromeDriver");
                 driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(5);
                 driver.Manage().Window.Minimize();
 
                 var url = @"https://vtuber-insight.com/index.html";
 
-                Console.WriteLine($"** GoToUrl({url})");
+                log.Infomation($"** GoToUrl({url})");
                 driver.Navigate().GoToUrl(url);
-                Console.WriteLine($"** Navigated {url}");
+                log.Infomation($"** Navigated {url}");
 
                 for (int i = 20; i > 0; i--)
                 {
-                    Console.WriteLine($"** Wait {i} seconds for web socket");
+                    log.Infomation($"** Wait {i} seconds for web socket");
                     await Task.Delay(TimeSpan.FromSeconds(1));
                 }
 
-                Console.WriteLine("get drive.PageSource");
+                log.Infomation("get drive.PageSource");
 
                 return driver.PageSource;
             }
