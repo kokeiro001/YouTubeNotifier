@@ -24,7 +24,7 @@ namespace YouTubeNotifier.UseCases
 
             var stringBuilder = new StringBuilder();
 
-            stringBuilder.AppendLine($"{playlistTitle}に投稿/公開されたバーチャルYouTuberの動画/生放送を再生リストにまとめました。({videoCount}件登録済み)");
+            stringBuilder.AppendLine($"再生リスト「{playlistTitle}」を作成しました。({videoCount}件登録済み)");
 
             stringBuilder.AppendLine("");
             stringBuilder.Append(playlistUrl);

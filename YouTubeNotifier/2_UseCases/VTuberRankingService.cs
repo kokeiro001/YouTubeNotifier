@@ -76,7 +76,8 @@ namespace YouTubeNotifier.UseCases
         {
             var titleJst = DateTime.UtcNow.AddHours(9).Date.AddDays(-1);
             log.Infomation($"GetOrInsertPlaylist(youTubeService, {titleJst})");
-            var (playlist, videoIds) = await GetOrInsertPlaylist(youtubeService, titleJst);
+            var playlistTitle = titleJst.ToString("yyyy年M月dd日") + "に投稿されたバーチャルYouTuberの動画・生放送";
+            var (playlist, videoIds) = await GetOrInsertPlaylist(playlistTitle);
 
             log.Infomation("GeneratePlaylistFromLatestMoviesJson");
             var newVideos = await youtubeBlobService.DownloadLatestYouTubeVideos();
@@ -123,11 +124,10 @@ namespace YouTubeNotifier.UseCases
             return (playlist.Id, playlist.Snippet.Title, videoCount);
         }
 
-        private async Task<(Playlist playlist, List<string> videoIds)> GetOrInsertPlaylist(YouTubeService youTubeService, DateTime titleJst)
+        private async Task<(Playlist playlist, List<string> videoIds)> GetOrInsertPlaylist(string playlistTitle)
         {
             var pageToken = default(string);
 
-            var playlistTitle = titleJst.ToString("yyyy年M月dd日") + "に投稿されたバーチャルYouTuberの動画・生放送";
 
             log.Infomation($"GetOrInsertPlaylist playlistTitle={playlistTitle}");
 
@@ -136,7 +136,7 @@ namespace YouTubeNotifier.UseCases
 
             do
             {
-                var listPlaylistRequest = youTubeService.Playlists.List("id,snippet");
+                var listPlaylistRequest = youtubeService.Playlists.List("id,snippet");
                 listPlaylistRequest.Mine = true;
                 listPlaylistRequest.MaxResults = 5;
                 listPlaylistRequest.PageToken = pageToken;
@@ -151,7 +151,7 @@ namespace YouTubeNotifier.UseCases
 
                 if (playlist != null)
                 {
-                    var videoIds = await GetPlaylistItemsCount(youTubeService, playlist);
+                    var videoIds = await GetPlaylistItemsCount(playlist);
 
                     return (playlist, videoIds);
                 }
@@ -168,7 +168,7 @@ namespace YouTubeNotifier.UseCases
 
             log.Infomation($"InsertPlayList {playlistTitle}");
 
-            var insertPlaylistRequest = youTubeService.Playlists.Insert(new Playlist
+            var insertPlaylistRequest = youtubeService.Playlists.Insert(new Playlist
             {
                 Snippet = new PlaylistSnippet
                 {
@@ -188,7 +188,7 @@ namespace YouTubeNotifier.UseCases
             return (insertPlaylistResponse, new List<string>());
         }
 
-        private static async Task<List<string>> GetPlaylistItemsCount(YouTubeService youTubeService, Playlist playlist)
+        private async Task<List<string>> GetPlaylistItemsCount(Playlist playlist)
         {
             var pageToken = default(string);
 
@@ -196,7 +196,7 @@ namespace YouTubeNotifier.UseCases
 
             do
             {
-                var playlistItemsRequest = youTubeService.PlaylistItems.List("snippet");
+                var playlistItemsRequest = youtubeService.PlaylistItems.List("snippet");
                 playlistItemsRequest.Fields = "items/snippet/id";
                 playlistItemsRequest.PageToken = pageToken;
                 playlistItemsRequest.PlaylistId = playlist.Id;
