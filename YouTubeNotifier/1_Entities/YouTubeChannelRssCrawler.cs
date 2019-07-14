@@ -4,9 +4,9 @@ using System.Linq;
 using System.ServiceModel.Syndication;
 using System.Threading.Tasks;
 using System.Xml;
-using YouTubeNotifier.VTuberRankingCrawler.Common;
+using YouTubeNotifier.Common;
 
-namespace YouTubeNotifier.VTuberRankingCrawler.Entities
+namespace YouTubeNotifier.Entities
 {
     class YouTubeChannelRssCrawler
     {

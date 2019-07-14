@@ -1,7 +1,9 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Text;
 
-namespace YouTubeNotifier.VTuberRankingCrawler.Common
+namespace YouTubeNotifier.Common
 {
     public static class ConverterExtensions
     {
@@ -18,6 +20,11 @@ namespace YouTubeNotifier.VTuberRankingCrawler.Common
         public static string ToStringWithEncoding(this MemoryStream stream, Encoding encoding)
         {
             return encoding.GetString(stream.ToArray());
+        }
+
+        public static string JoinString(this IEnumerable<string> source, string separator)
+        {
+            return string.Join(separator, source.ToArray());
         }
     }
 }

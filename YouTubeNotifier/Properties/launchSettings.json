@@ -1,6 +1,6 @@
 {
   "profiles": {
-    "YouTubeNotifier.VTuberRankingCrawler": {
+    "YouTubeNotifier": {
       "commandName": "Project"
     },
     "Docker": {

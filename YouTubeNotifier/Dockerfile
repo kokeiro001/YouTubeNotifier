@@ -50,16 +50,16 @@ WORKDIR /app
 # build
 FROM mcr.microsoft.com/dotnet/core/sdk:2.2-stretch AS build
 WORKDIR /src
-COPY ["YouTubeNotifier.VTuberRankingCrawler/YouTubeNotifier.VTuberRankingCrawler.csproj", "YouTubeNotifier.VTuberRankingCrawler/"]
-RUN dotnet restore "YouTubeNotifier.VTuberRankingCrawler/YouTubeNotifier.VTuberRankingCrawler.csproj"
+COPY ["YouTubeNotifier/YouTubeNotifier.csproj", "YouTubeNotifier/"]
+RUN dotnet restore "YouTubeNotifier/YouTubeNotifier.csproj"
 COPY . .
-WORKDIR "/src/YouTubeNotifier.VTuberRankingCrawler"
-RUN dotnet build "YouTubeNotifier.VTuberRankingCrawler.csproj" -c Release -o /app
+WORKDIR "/src/YouTubeNotifier"
+RUN dotnet build "YouTubeNotifier.csproj" -c Release -o /app
 
 FROM build AS publish
-RUN dotnet publish "YouTubeNotifier.VTuberRankingCrawler.csproj" -c Release -o /app
+RUN dotnet publish "YouTubeNotifier.csproj" -c Release -o /app
 
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app .
-ENTRYPOINT ["dotnet", "YouTubeNotifier.VTuberRankingCrawler.dll"]
+ENTRYPOINT ["dotnet", "YouTubeNotifier.dll"]

@@ -33,7 +33,7 @@
     <param name="MaximumFileSize" value="10MB" />
     <param name="MaxSizeRollBackups" value="10" />
 
-    <layout type="YouTubeNotifier.VTuberRankingCrawler.FullStackTracePatternLayout, YouTubeNotifier.VTuberRankingCrawler">
+    <layout type="YouTubeNotifier.FullStackTracePatternLayout, YouTubeNotifier">
       <ConversionPattern value="%date [%thread] [%-5level] %full_stack_trace - %message%n" />
     </layout>
   </appender>

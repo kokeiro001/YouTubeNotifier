@@ -5,10 +5,10 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 using YouTubeNotifier.Common.Service;
-using YouTubeNotifier.VTuberRankingCrawler.Common;
-using YouTubeNotifier.VTuberRankingCrawler.Entities;
+using YouTubeNotifier.Common;
+using YouTubeNotifier.Entities;
 
-namespace YouTubeNotifier.VTuberRankingCrawler.UseCases
+namespace YouTubeNotifier.UseCases
 {
     static class ServiceProviderCreator
     {

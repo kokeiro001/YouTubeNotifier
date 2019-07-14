@@ -2,7 +2,7 @@
 using System.Text;
 using System.Threading.Tasks;
 
-namespace YouTubeNotifier.VTuberRankingCrawler.UseCases
+namespace YouTubeNotifier.UseCases
 {
     class TwitterService
     {

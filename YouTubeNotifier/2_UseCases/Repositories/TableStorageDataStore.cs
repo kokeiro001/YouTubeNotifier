@@ -8,7 +8,7 @@ using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 
-namespace YouTubeNotifier.VTuberRankingCrawler.UseCases.Repositories
+namespace YouTubeNotifier.UseCases.Repositories
 {
     // https://gist.github.com/NoelOConnell/0dee5fc144b0d56a2ce0aa0411316de9
     public class DataStoreItem : TableEntity

@@ -1,8 +1,8 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using System.Threading.Tasks;
-using YouTubeNotifier.VTuberRankingCrawler.UseCases;
+using YouTubeNotifier.UseCases;
 
-namespace YouTubeNotifier.VTuberRankingCrawler
+namespace YouTubeNotifier
 {
     public class Settings
     {

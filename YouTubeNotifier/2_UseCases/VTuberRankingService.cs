@@ -5,10 +5,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using YouTubeNotifier.VTuberRankingCrawler.Common;
-using YouTubeNotifier.VTuberRankingCrawler.Entities;
+using YouTubeNotifier.Common;
+using YouTubeNotifier.Entities;
 
-namespace YouTubeNotifier.VTuberRankingCrawler.UseCases
+namespace YouTubeNotifier.UseCases
 {
     class VTuberRankingService
     {
