@@ -3,6 +3,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using YouTubeNotifier.Common;
+using YouTubeNotifier.VTuberRankingCrawler.Common;
 using YouTubeNotifier.VTuberRankingCrawler.Entities;
 
 namespace YouTubeNotifier.VTuberRankingCrawler.UseCases

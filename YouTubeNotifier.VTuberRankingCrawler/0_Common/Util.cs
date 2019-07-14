@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace YouTubeNotifier.Common
+namespace YouTubeNotifier.VTuberRankingCrawler.Common
 {
     public static class Util
     {

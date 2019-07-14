@@ -2,7 +2,7 @@
 using Microsoft.WindowsAzure.Storage.Table;
 using System.Threading.Tasks;
 
-namespace YouTubeNotifier.Common.Repository
+namespace YouTubeNotifier.VTuberRankingCrawler.UseCases.Repositories
 {
     public class TableStorageSecretStore
     {

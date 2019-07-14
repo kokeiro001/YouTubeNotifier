@@ -98,7 +98,7 @@ namespace YouTubeNotifier.VTuberRankingCrawler.Entities
                 .Where(x => !string.IsNullOrEmpty(x.ChannelName));
         }
 
-        private static async Task<string> GetPageSource()
+        private async Task<string> GetPageSource()
         {
             var driverPath = "/opt/selenium/";
             var driverExecutableFileName = "chromedriver";

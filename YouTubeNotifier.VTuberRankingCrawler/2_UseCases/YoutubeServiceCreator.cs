@@ -4,7 +4,8 @@ using Google.Apis.YouTube.v3;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using YouTubeNotifier.Common.Repository;
+using YouTubeNotifier.VTuberRankingCrawler.Common;
+using YouTubeNotifier.VTuberRankingCrawler.UseCases.Repositories;
 
 namespace YouTubeNotifier.Common.Service
 {
