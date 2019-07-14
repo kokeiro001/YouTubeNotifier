@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using YouTubeNotifier.Common;
 using YouTubeNotifier.UseCases.Repositories;
 
-namespace YouTubeNotifier.Common.Service
+namespace YouTubeNotifier.UseCases
 {
     public static class YoutubeServiceCreator
     {

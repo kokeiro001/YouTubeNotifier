@@ -4,7 +4,6 @@ using Newtonsoft.Json;
 using System;
 using System.IO;
 using System.Threading.Tasks;
-using YouTubeNotifier.Common.Service;
 using YouTubeNotifier.Common;
 using YouTubeNotifier.Entities;
 

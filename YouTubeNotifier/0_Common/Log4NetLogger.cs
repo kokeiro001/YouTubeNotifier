@@ -9,7 +9,6 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Xml;
-using YouTubeNotifier.Common;
 
 namespace YouTubeNotifier.Common
 {

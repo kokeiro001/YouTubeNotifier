@@ -127,7 +127,7 @@ namespace YouTubeNotifier.UseCases
         {
             var pageToken = default(string);
 
-            var playlistTitle = titleJst.ToString("yyyy年M月dd日") + "のVTuber動画・生放送";
+            var playlistTitle = titleJst.ToString("yyyy年M月dd日") + "に投稿されたバーチャルYouTuberの動画・生放送";
 
             log.Infomation($"GetOrInsertPlaylist playlistTitle={playlistTitle}");
 
