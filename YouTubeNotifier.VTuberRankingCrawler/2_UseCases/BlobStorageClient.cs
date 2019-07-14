@@ -5,7 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace YouTubeNotifier.VTuberRankingCrawler
+namespace YouTubeNotifier.VTuberRankingCrawler.UseCases
 {
     class BlobStorageClient
     {

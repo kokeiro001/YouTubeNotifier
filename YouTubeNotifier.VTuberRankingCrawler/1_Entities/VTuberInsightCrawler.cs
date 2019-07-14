@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace YouTubeNotifier.VTuberRankingCrawler
+namespace YouTubeNotifier.VTuberRankingCrawler.Entities
 {
     class YouTubeChannelRankingItem
     {

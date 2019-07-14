@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using System.Threading.Tasks;
+using YouTubeNotifier.VTuberRankingCrawler.UseCases;
 
 namespace YouTubeNotifier.VTuberRankingCrawler
 {

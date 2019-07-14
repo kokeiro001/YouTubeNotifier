@@ -11,7 +11,7 @@ using System.Runtime.CompilerServices;
 using System.Xml;
 using YouTubeNotifier.Common;
 
-namespace YouTubeNotifier.VTuberRankingCrawler
+namespace YouTubeNotifier.VTuberRankingCrawler.Common
 {
     public class Log4NetLogger
     {
