@@ -69,9 +69,6 @@ namespace YouTubeNotifier.UseCases
             return await youtubeChannelRssCrawler.GetUploadedMoviesFromRss(youtubeChannelIds, fromUtc, toUtc);
         }
 
-        /// <summary>
-        /// </summary>
-        /// <returns>PlaylistId</returns>
         public async Task<(string playlistId, string playlistTitle, int videoCount)> GeneratePlaylistFromLatestMoviesJson()
         {
             var titleJst = DateTime.UtcNow.AddHours(9).Date.AddDays(-1);
@@ -128,7 +125,6 @@ namespace YouTubeNotifier.UseCases
         {
             var pageToken = default(string);
 
-
             log.Infomation($"GetOrInsertPlaylist playlistTitle={playlistTitle}");
 
             var page = 0;
@@ -151,7 +147,7 @@ namespace YouTubeNotifier.UseCases
 
                 if (playlist != null)
                 {
-                    var videoIds = await GetPlaylistItemsCount(playlist);
+                    var videoIds = await GetPlaylistItemVideoIds(playlist);
 
                     return (playlist, videoIds);
                 }
@@ -188,7 +184,7 @@ namespace YouTubeNotifier.UseCases
             return (insertPlaylistResponse, new List<string>());
         }
 
-        private async Task<List<string>> GetPlaylistItemsCount(Playlist playlist)
+        private async Task<List<string>> GetPlaylistItemVideoIds(Playlist playlist)
         {
             var pageToken = default(string);
 
