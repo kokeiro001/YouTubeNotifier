@@ -24,7 +24,7 @@ namespace YouTubeNotifier.UseCases
 
             serviceCollection.AddSingleton<VTuberRankingService>();
 
-            serviceCollection.AddSingleton<TwitterService>();
+            serviceCollection.AddSingleton<TwitterService>(new TwitterService(settings.Twitter));
 
             serviceCollection.AddSingleton<YouTubeBlobService>(new YouTubeBlobService(settings.AzureCloudStorageConnectionString));
 

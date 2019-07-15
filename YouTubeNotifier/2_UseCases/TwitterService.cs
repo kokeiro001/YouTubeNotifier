@@ -8,13 +8,13 @@ namespace YouTubeNotifier.UseCases
     {
         private readonly Tokens tokens;
 
-        public TwitterService(Settings settings)
+        public TwitterService(Settings.TwitterSettings settings)
         {
             tokens = Tokens.Create(
-                settings.Twitter.ApiKey,
-                settings.Twitter.ApiSecret,
-                settings.Twitter.AccessToken,
-                settings.Twitter.AccessTokenSecret
+                settings.ApiKey,
+                settings.ApiSecret,
+                settings.AccessToken,
+                settings.AccessTokenSecret
             );
         }
 
